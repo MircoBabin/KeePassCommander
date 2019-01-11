@@ -1,0 +1,29 @@
+c:\KeePass> KeePassCommand.exe get "Sample Entry"
+SUCCESS
+B	
+I	Sample Entry
+I	User Name
+I	Password
+I	https://keepass.info/
+I	https
+I	keepass.info
+I	443
+I	/
+I	Tm90ZXM=
+I	
+E	
+
+c:\KeePass>..\php\php.exe -c ..\integration\php.ini KeePassEntry.php
+KeePassEntry Object
+(
+    [title] => Sample Entry
+    [username] => User Name
+    [password] => Password
+    [url] => https://keepass.info/
+    [urlscheme] => https
+    [urlhost] => keepass.info
+    [urlport] => 443
+    [urlpath] => /
+    [notes] => Notes
+)
+

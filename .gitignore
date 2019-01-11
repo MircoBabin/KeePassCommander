@@ -1,0 +1,12 @@
+/bin
+/obj
+/.vs
+src/bin
+src/obj
+src/.vs
+src/KeePassCommand/bin
+src/KeePassCommand/obj
+src/KeePassCommand/.vs
+src/KeePassCommanderPlugin/bin
+src/KeePassCommanderPlugin/obj
+src/KeePassCommanderPlugin/.vs
