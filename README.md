@@ -1,6 +1,6 @@
 # KeePass Commander
 KeePass Commander is a plugin for the [KeePass password store](https://keepass.info/ "KeePass"). 
-It's purpose is to provide a communication channel for php-scripts, ... to be able to query the KeePass password store from the commandline.
+It's purpose is to provide a communication channel for php-scripts, bat-files, ... to be able to query the KeePass password store from the commandline.
 
 ![Screenshot](screenshot.png)
 
@@ -29,6 +29,7 @@ Examples are found in the github directory **example**.
 
 - example.kdbx is a KeePass database. It's master password is **example**.
 - [KeePassEntry.php](example/KeePassEntry.php) can be used to query the KeePass password store from PHP. With minimal modifications you can use it anywhere.
+- [KeePassEntry.bat](example/KeePassEntry.bat) can be used to query the KeePass password store from a BAT file. With minimal modifications you can use it anywhere.
 
 
 # Why

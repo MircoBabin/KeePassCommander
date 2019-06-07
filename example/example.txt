@@ -27,3 +27,13 @@ KeePassEntry Object
     [notes] => Notes
 )
 
+c:\KeePass>KeePassEntry.bat
+entryname:  Sample Entry
+username:   User Name
+password:   Password
+url:        https://keepass.info/
+url-scheme: https
+url-host:   keepass.info
+url-port:   443
+url-path:   /
+notes:      Tm90ZXM=
