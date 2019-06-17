@@ -37,3 +37,16 @@ url-host:   keepass.info
 url-port:   443
 url-path:   /
 notes:      Tm90ZXM=
+
+c:\KeePass>>powershell -NoProfile -ExecutionPolicy Bypass -file KeePassEntry.ps1
+
+
+title     : Sample Entry
+username  : User Name
+password  : Password
+url       : https://keepass.info/
+urlscheme : https
+urlhost   : keepass.info
+urlport   : 443
+urlpath   : /
+notes     : Notes
