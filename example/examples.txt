@@ -1,0 +1,37 @@
+C:\Projects\KeePassCommander\example>FromBat.bat
+entryname:  Sample Entry
+username:   User Name
+password:   Password
+url:        https://keepass.info/
+url-scheme: https
+url-host:   keepass.info
+url-port:   443
+url-path:   /
+notes:      Tm90ZXMgw4nDqW4g4oKsw7tyw7I=
+
+C:\Projects\KeePassCommander\example>FromPowershell.bat
+
+
+title     : Sample Entry
+username  : User Name
+password  : Password
+url       : https://keepass.info/
+urlscheme : https
+urlhost   : keepass.info
+urlport   : 443
+urlpath   : /
+notes     : Notes Één €ûrò
+
+C:\Projects\KeePassCommander\example>FromPhp.bat
+KeePassCommander\KeePassEntry Object
+(
+    [title] => Sample Entry
+    [username] => User Name
+    [password] => Password
+    [url] => https://keepass.info/
+    [urlscheme] => https
+    [urlhost] => keepass.info
+    [urlport] => 443
+    [urlpath] => /
+    [notes] => Notes Één €ûrò
+)

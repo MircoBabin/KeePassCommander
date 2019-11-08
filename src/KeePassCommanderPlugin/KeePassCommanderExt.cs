@@ -13,6 +13,7 @@ namespace KeePassCommander
     public sealed class KeePassCommanderExt : Plugin
     {
         private IPluginHost KeePassHost = null;
+        private const string BeginOfResponse = "\t\t\t[--- begin of response ---]\t\t\t";
         private const string EndOfResponse = "\t\t\t[--- end of response ---]\t\t\t";
 
         private string ServerPipeName;
@@ -151,6 +152,12 @@ namespace KeePassCommander
                 {
                     if (parms[0] == "get")
                         output = CommandGet(parms);
+                    else if (parms[0] == "getfield")
+                        output = CommandGetField(parms);
+                    else if (parms[0] == "getattachment")
+                        output = CommandGetAttachment(parms);
+                    else if (parms[0] == "getnote")
+                        output = CommandGetNote(parms);
                 }
 
                 writer.WriteLine(output);
@@ -172,75 +179,234 @@ namespace KeePassCommander
             }
         }
 
-        private string CommandGet(string[] parms)
+        private void FindTitles(Dictionary<string, List<PwEntry>> search)
         {
-            Dictionary<string, string> names = new Dictionary<string, string>();
+            if (search.Count == 0) return;
 
-            for (int i = 1; i < parms.Length; i++)
+            foreach (var doc in KeePassHost.MainWindow.DocumentManager.Documents)
             {
-                string name = parms[i].Trim();
-                if (name.Length > 0)
-                {
-                    names.Add(name, String.Empty);
-                }
-            }
+                PwDatabase db = doc.Database;
 
-            if (names.Count > 0)
-            {
-                foreach (var doc in KeePassHost.MainWindow.DocumentManager.Documents)
+                if (db.IsOpen)
                 {
-                    PwDatabase db = doc.Database;
-
-                    if (db.IsOpen)
+                    var items = db.RootGroup.GetObjects(true, true);
+                    foreach (var item in items)
                     {
-                        var items = db.RootGroup.GetObjects(true, true);
-                        foreach (var item in items)
+                        if (item is PwEntry)
                         {
-                            if (item is PwEntry)
+                            PwEntry entry = item as PwEntry;
+
+                            string title = entry.Strings.ReadSafe("Title");
+                            if (search.ContainsKey(title))
                             {
-                                PwEntry entry = item as PwEntry;
-
-                                string title = entry.Strings.ReadSafe("Title");
-                                if (names.ContainsKey(title))
-                                {
-                                    string url = entry.Strings.ReadSafe("URL");
-                                    string urlscheme = String.Empty;
-                                    string urlhost = String.Empty;
-                                    string urlport = String.Empty;
-                                    string urlpath = String.Empty;
-                                    try
-                                    {
-                                        Uri uri = new Uri(url);
-                                        urlscheme = uri.Scheme;
-                                        urlhost = uri.Host;
-                                        if (uri.Port != -1) urlport = uri.Port.ToString();
-                                        urlpath = uri.AbsolutePath;
-                                    }
-                                    catch { }
-
-                                    names[title] = title + "\t" +
-                                                   entry.Strings.ReadSafe("UserName") + "\t" +
-                                                   entry.Strings.ReadSafe("Password") + "\t" +
-                                                   url + "\t" +
-                                                   urlscheme + "\t" +
-                                                   urlhost + "\t" +
-                                                   urlport + "\t" +
-                                                   urlpath + "\t" +
-                                                   Convert.ToBase64String(Encoding.UTF8.GetBytes(entry.Strings.ReadSafe("Notes"))) + "\t";
-                                }
+                                search[title].Add(entry);
                             }
                         }
                     }
                 }
             }
+        }
 
+
+        private string CommandGet(string[] parms)
+        {
             StringBuilder result = new StringBuilder();
-            foreach (var keypair in names)
+            result.AppendLine(BeginOfResponse + "[get][default-1-column]");
+
+            Dictionary<string, List<PwEntry>> titles = new Dictionary<string, List<PwEntry>>();
             {
-                string value = keypair.Value;
-                if (value != String.Empty)
+                for (int i = 1; i < parms.Length; i++)
                 {
-                    result.AppendLine(value);
+                    string name = parms[i].Trim();
+                    if (name.Length > 0)
+                    {
+                        titles.Add(name, new List<PwEntry>());
+                    }
+                }
+                FindTitles(titles);
+            }
+
+            foreach (var keypair in titles)
+            {
+                foreach (PwEntry entry in keypair.Value)
+                {
+                    try
+                    {
+                        string url = entry.Strings.ReadSafe("URL");
+                        string urlscheme = String.Empty;
+                        string urlhost = String.Empty;
+                        string urlport = String.Empty;
+                        string urlpath = String.Empty;
+
+                        try
+                        {
+                            Uri uri = new Uri(url);
+                            urlscheme = uri.Scheme;
+                            urlhost = uri.Host;
+                            if (uri.Port != -1) urlport = uri.Port.ToString();
+                            urlpath = uri.AbsolutePath;
+                        }
+                        catch { }
+
+                        result.AppendLine(entry.Strings.ReadSafe("Title") + "\t" +
+                                          entry.Strings.ReadSafe("UserName") + "\t" +
+                                          entry.Strings.ReadSafe("Password") + "\t" +
+                                          url + "\t" +
+                                          urlscheme + "\t" +
+                                          urlhost + "\t" +
+                                          urlport + "\t" +
+                                          urlpath + "\t" +
+                                          Convert.ToBase64String(Encoding.UTF8.GetBytes(entry.Strings.ReadSafe("Notes"))) + "\t");
+                    }
+                    catch { }
+                }
+            }
+
+            return result.ToString();
+        }
+
+        private string CommandGetField(string[] parms)
+        {
+            StringBuilder result = new StringBuilder();
+            result.AppendLine(BeginOfResponse + "[getfield][default-2-column]");
+
+            Dictionary<string, List<PwEntry>> titles = new Dictionary<string, List<PwEntry>>();
+            {
+                string name = (parms.Length >= 2 ? parms[1].Trim() : String.Empty);
+                if (!string.IsNullOrEmpty(name))
+                {
+                    titles.Add(name, new List<PwEntry>());
+                }
+                FindTitles(titles);
+            }
+
+            List<string> fieldnames = new List<string>();
+            {
+                for (int i = 2; i < parms.Length; i++)
+                {
+                    string name = parms[i].Trim();
+                    if (name.Length > 0)
+                    {
+                        fieldnames.Add(name);
+                    }
+                }
+            }
+
+            foreach (var keypair in titles)
+            {
+                foreach (PwEntry entry in keypair.Value)
+                {
+                    result.Append("title");
+                    result.Append("\t");
+                    result.Append(entry.Strings.ReadSafe("Title"));
+                    result.Append("\t");
+
+                    foreach (string fieldname in fieldnames)
+                    {
+                        try
+                        {
+                            string value = entry.Strings.ReadSafe(fieldname);
+
+                            result.Append(fieldname);
+                            result.Append("\t");
+                            result.Append(value);
+                            result.Append("\t");
+                        }
+                        catch { }
+                    }
+
+                    result.AppendLine();
+                }
+            }
+
+            return result.ToString();
+        }
+
+        private string CommandGetAttachment(string[] parms)
+        {
+            StringBuilder result = new StringBuilder();
+            result.AppendLine(BeginOfResponse + "[getfield][default-2-column]");
+
+            Dictionary<string, List<PwEntry>> titles = new Dictionary<string, List<PwEntry>>();
+            {
+                string name = (parms.Length >= 2 ? parms[1].Trim() : String.Empty);
+                if (!string.IsNullOrEmpty(name))
+                {
+                    titles.Add(name, new List<PwEntry>());
+                }
+                FindTitles(titles);
+            }
+
+            List<string> attachmentnames = new List<string>();
+            {
+                for (int i = 2; i < parms.Length; i++)
+                {
+                    string name = parms[i].Trim();
+                    if (name.Length > 0)
+                    {
+                        attachmentnames.Add(name);
+                    }
+                }
+            }
+
+            foreach (var keypair in titles)
+            {
+                foreach (PwEntry entry in keypair.Value)
+                {
+                    result.Append("title");
+                    result.Append("\t");
+                    result.Append(entry.Strings.ReadSafe("Title"));
+                    result.Append("\t");
+
+                    foreach (string attachmentname in attachmentnames)
+                    {
+                        try
+                        {
+                            byte[] value = entry.Binaries.Get(attachmentname).ReadData();
+
+                            result.Append(attachmentname);
+                            result.Append("\t");
+                            result.Append(Convert.ToBase64String(value));
+                            result.Append("\t");
+                        }
+                        catch { }
+                    }
+
+                    result.AppendLine();
+                }
+            }
+
+            return result.ToString();
+        }
+
+        private string CommandGetNote(string[] parms)
+        {
+            StringBuilder result = new StringBuilder();
+            result.AppendLine(BeginOfResponse + "[getfield][default-1-column]");
+
+            Dictionary<string, List<PwEntry>> titles = new Dictionary<string, List<PwEntry>>();
+            {
+                string name = (parms.Length >= 2 ? parms[1].Trim() : String.Empty);
+                if (!string.IsNullOrEmpty(name))
+                {
+                    titles.Add(name, new List<PwEntry>());
+                }
+                FindTitles(titles);
+            }
+
+            foreach (var keypair in titles)
+            {
+                foreach (PwEntry entry in keypair.Value)
+                {
+                    result.Append(entry.Strings.ReadSafe("Title"));
+                    result.Append("\t");
+                    try
+                    {
+                        result.Append(Convert.ToBase64String(Encoding.UTF8.GetBytes(entry.Strings.ReadSafe("Notes"))));
+                        result.Append("\t");
+                    }
+                    catch { }
+                    result.AppendLine();
                 }
             }
 
