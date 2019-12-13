@@ -325,7 +325,7 @@ namespace KeePassCommander
         private string CommandGetAttachment(string[] parms)
         {
             StringBuilder result = new StringBuilder();
-            result.AppendLine(BeginOfResponse + "[getfield][default-2-column]");
+            result.AppendLine(BeginOfResponse + "[getattachment][default-2-column]");
 
             Dictionary<string, List<PwEntry>> titles = new Dictionary<string, List<PwEntry>>();
             {
@@ -382,7 +382,7 @@ namespace KeePassCommander
         private string CommandGetNote(string[] parms)
         {
             StringBuilder result = new StringBuilder();
-            result.AppendLine(BeginOfResponse + "[getfield][default-1-column]");
+            result.AppendLine(BeginOfResponse + "[getnote][default-1-column]");
 
             Dictionary<string, List<PwEntry>> titles = new Dictionary<string, List<PwEntry>>();
             {
