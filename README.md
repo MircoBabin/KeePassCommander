@@ -5,12 +5,13 @@ It's purpose is to provide a communication channel for php-scripts, bat-files, p
 ![Screenshot](screenshot.png)
 
 # Download binary
-For Windows (.NET framework 3.5 / .NET framework 4), [the latest version can be found here](https://github.com/MircoBabin/KeePassCommander/releases/latest "Lastest Version").
-The plugin works with KeePass 2.41. Because the plugin barely uses anything from KeePass, it will probably work with all future KeePass versions.
+For Windows (.NET framework 4), [the latest version can be found here](https://github.com/MircoBabin/KeePassCommander/releases/latest "Lastest Version").
+The plugin works with KeePass 2.44. Because the plugin barely uses anything from KeePass, it will probably work with all future KeePass versions.
 
 Download the zip and unpack it in the KeePass directory where KeePass.exe is located.
 
-The minimum .NET framework required is 3.5. This is the first framework to implement the System.IO.Pipes namespace.
+The minimum .NET framework required is 4.0.
+.NET framework version 3.5 is the first framework to implement the System.IO.Pipes namespace, but KeePass only supports v4.0 and v2.0.50727.
 
 # Help
 
