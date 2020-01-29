@@ -12,12 +12,13 @@ namespace KeePassCommand
             StringBuilder sb = new StringBuilder();
 
             var version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
-            DateTime buildDate = new DateTime(2000, 1, 1)
-                .AddDays(version.Build).AddSeconds(version.Revision * 2);
 
             sb.Append("KeePassCommand ");
             sb.Append(version.Major + "." + version.Minor);
-            sb.Append(" [build " + buildDate.ToString("yyyy-MM-dd HH:mm:ss") + "]");
+            if (version.Build > 0)
+            {
+                sb.Append(" [patch " + version.Build + "]");
+            }
             sb.AppendLine();
             sb.AppendLine("https://github.com/MircoBabin/KeePassCommander - MIT license");
 
