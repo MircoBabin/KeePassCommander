@@ -1,4 +1,4 @@
-# KeePass Commander (KeePassCommander.dll, KeePassCommand.exe)
+# KeePass Commander
 ## MIT license 
 
 Copyright (c) 2018 Mirco Babin

@@ -80,7 +80,7 @@ namespace KeePassCommand
 
             sb.AppendLine();
             sb.AppendLine("--- LICENSE ---");
-            sb.AppendLine("KeePass Commander (KeePassCommander.dll, KeePassCommand.exe)");
+            sb.AppendLine("KeePass Commander");
             sb.AppendLine("MIT license"); 
             sb.AppendLine();
             sb.AppendLine("Copyright (c) 2018 Mirco Babin");
