@@ -179,6 +179,64 @@ namespace KeePassCommander
             }
         }
 
+        private string GetPasswordEntryField(PwEntry entry, string FieldName)
+        {
+            const string StrRefStart = @"{REF:";
+            const string StrRefEnd = @"}";
+            const StringComparison ScMethod = StringComparison.OrdinalIgnoreCase;
+
+            string input = entry.Strings.ReadSafe(FieldName);
+
+            //replace field references
+            //See also KeePass source SprEngine.cs function FillRefPlaceholders
+            if (input.IndexOf(StrRefStart, 0, ScMethod) < 0)
+            {
+                //nothing to do
+                return input;
+            }
+
+            KeePass.Util.Spr.SprContext ctx = new KeePass.Util.Spr.SprContext(entry,
+                KeePassHost.MainWindow.DocumentManager.SafeFindContainerOf(entry),
+                KeePass.Util.Spr.SprCompileFlags.Deref);
+
+
+            int nOffset = 0;
+            while (true)
+            {
+                int nStart = input.IndexOf(StrRefStart, nOffset, ScMethod);
+                if (nStart < 0) break;
+                int nEnd = input.IndexOf(StrRefEnd, nStart + 1, ScMethod);
+                if (nEnd <= nStart) break;
+
+                string strFullRef = input.Substring(nStart, nEnd - nStart + 1);
+                char chScan, chWanted;
+                PwEntry peFound = KeePass.Util.Spr.SprEngine.FindRefTarget(strFullRef, ctx, out chScan, out chWanted);
+
+                if (peFound != null)
+                {
+                    string strInsData;
+                    if (chWanted == 'T')
+                        strInsData = peFound.Strings.ReadSafe(PwDefs.TitleField);
+                    else if (chWanted == 'U')
+                        strInsData = peFound.Strings.ReadSafe(PwDefs.UserNameField);
+                    else if (chWanted == 'A')
+                        strInsData = peFound.Strings.ReadSafe(PwDefs.UrlField);
+                    else if (chWanted == 'P')
+                        strInsData = peFound.Strings.ReadSafe(PwDefs.PasswordField);
+                    else if (chWanted == 'N')
+                        strInsData = peFound.Strings.ReadSafe(PwDefs.NotesField);
+                    else if (chWanted == 'I')
+                        strInsData = peFound.Uuid.ToHexString();
+                    else { nOffset = nStart + 1; continue; }
+
+                    input = input.Substring(0, nStart) + strInsData + input.Substring(nEnd + StrRefEnd.Length);
+                }
+                else { nOffset = nStart + 1; continue; }
+            }
+
+            return input;
+        }
+
         private void FindTitles(Dictionary<string, List<PwEntry>> search)
         {
             if (search.Count == 0) return;
@@ -196,7 +254,7 @@ namespace KeePassCommander
                         {
                             PwEntry entry = item as PwEntry;
 
-                            string title = entry.Strings.ReadSafe("Title");
+                            string title = GetPasswordEntryField(entry, PwDefs.TitleField);
                             if (search.ContainsKey(title))
                             {
                                 search[title].Add(entry);
@@ -206,7 +264,6 @@ namespace KeePassCommander
                 }
             }
         }
-
 
         private string CommandGet(string[] parms)
         {
@@ -232,7 +289,7 @@ namespace KeePassCommander
                 {
                     try
                     {
-                        string url = entry.Strings.ReadSafe("URL");
+                        string url = GetPasswordEntryField(entry, PwDefs.UrlField);
                         string urlscheme = String.Empty;
                         string urlhost = String.Empty;
                         string urlport = String.Empty;
@@ -248,15 +305,15 @@ namespace KeePassCommander
                         }
                         catch { }
 
-                        result.AppendLine(entry.Strings.ReadSafe("Title") + "\t" +
-                                          entry.Strings.ReadSafe("UserName") + "\t" +
-                                          entry.Strings.ReadSafe("Password") + "\t" +
+                        result.AppendLine(GetPasswordEntryField(entry, PwDefs.TitleField) + "\t" +
+                                          GetPasswordEntryField(entry, PwDefs.UserNameField) + "\t" +
+                                          GetPasswordEntryField(entry, PwDefs.PasswordField) + "\t" +
                                           url + "\t" +
                                           urlscheme + "\t" +
                                           urlhost + "\t" +
                                           urlport + "\t" +
                                           urlpath + "\t" +
-                                          Convert.ToBase64String(Encoding.UTF8.GetBytes(entry.Strings.ReadSafe("Notes"))) + "\t");
+                                          Convert.ToBase64String(Encoding.UTF8.GetBytes(GetPasswordEntryField(entry, PwDefs.NotesField))) + "\t");
                     }
                     catch { }
                 }
@@ -296,16 +353,16 @@ namespace KeePassCommander
             {
                 foreach (PwEntry entry in keypair.Value)
                 {
-                    result.Append("title");
+                    result.Append(PwDefs.TitleField);
                     result.Append("\t");
-                    result.Append(entry.Strings.ReadSafe("Title"));
+                    result.Append(GetPasswordEntryField(entry, PwDefs.TitleField));
                     result.Append("\t");
 
                     foreach (string fieldname in fieldnames)
                     {
                         try
                         {
-                            string value = entry.Strings.ReadSafe(fieldname);
+                            string value = GetPasswordEntryField(entry, fieldname);
 
                             result.Append(fieldname);
                             result.Append("\t");
@@ -353,9 +410,9 @@ namespace KeePassCommander
             {
                 foreach (PwEntry entry in keypair.Value)
                 {
-                    result.Append("title");
+                    result.Append(PwDefs.TitleField);
                     result.Append("\t");
-                    result.Append(entry.Strings.ReadSafe("Title"));
+                    result.Append(GetPasswordEntryField(entry, PwDefs.TitleField));
                     result.Append("\t");
 
                     foreach (string attachmentname in attachmentnames)
@@ -398,11 +455,11 @@ namespace KeePassCommander
             {
                 foreach (PwEntry entry in keypair.Value)
                 {
-                    result.Append(entry.Strings.ReadSafe("Title"));
+                    result.Append(GetPasswordEntryField(entry, PwDefs.TitleField));
                     result.Append("\t");
                     try
                     {
-                        result.Append(Convert.ToBase64String(Encoding.UTF8.GetBytes(entry.Strings.ReadSafe("Notes"))));
+                        result.Append(Convert.ToBase64String(Encoding.UTF8.GetBytes(GetPasswordEntryField(entry, PwDefs.NotesField))));
                         result.Append("\t");
                     }
                     catch { }
