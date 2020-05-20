@@ -1,11 +1,11 @@
 # KeePass Commander
 KeePass Commander is a plugin for the [KeePass password store](https://keepass.info/ "KeePass"). 
-It's purpose is to provide a communication channel for php-scripts, bat-files, powershell, ... to be able to query the KeePass password store from the commandline without configuration and without password.
+It's purpose is to provide a communication channel for php-scripts, bat-files, powershell, C#, ... to be able to query the KeePass password store from the commandline without configuration and without password.
 
 ![Screenshot](screenshot.png)
 
 # Download binary
-For Windows (.NET framework 4), [the latest version can be found here](https://github.com/MircoBabin/KeePassCommander/releases/latest "Lastest Version").
+For Windows (.NET framework 4), [the latest version can be found here](https://github.com/MircoBabin/KeePassCommander/releases/latest "Latest Version").
 The plugin works with KeePass 2.44. Because the plugin barely uses anything from KeePass, it will probably work with all future KeePass versions.
 
 Download the zip and unpack it in the KeePass directory where KeePass.exe is located.
@@ -18,11 +18,11 @@ The minimum .NET framework required is 4.0.
 Execute **KeePassCommand.exe** without parameters to view the help.
 
 ```
-KeePassCommand 2.1 [patch 3]
+KeePassCommand 2.2
 https://github.com/MircoBabin/KeePassCommander - MIT license
 
 KeePass Commander is a plugin for the KeePass password store (https://keepass.info/).
-It's purpose is to provide a communication channel for php-scripts, bat-files, powershell, ... to be able to query the KeePass password store from the commandline without configuration and without password.
+It's purpose is to provide a communication channel for php-scripts, bat-files, powershell, C#, ... to be able to query the KeePass password store from the commandline without configuration and without password.
 
 Syntax: KeePassCommand.exe <command> {-out:outputfilename OR -out-utf8:outputfilename} ...
 - Unless -out or -out-utf8 is used, output will be at the console (STDOUT).
@@ -70,8 +70,8 @@ Examples are found in the github directory **example**.
 - example.kdbx is a KeePass database. It's master password is **example**.
 - [FromPhp.php](example/FromPhp.php) can be used to query the KeePass password store from PHP. With minimal modifications you can use it anywhere.
 - [FromBat.bat](example/FromBat.bat) can be used to query the KeePass password store from a BAT file. With minimal modifications you can use it anywhere.
-- [FromPowershell.ps1](example/FromPowershell.ps1) can be used to query the KeePass password store from PowerShell. With minimal modifications you can use it anywhere.
-
+- [FromPowershell.ps1](example/FromPowershell.ps1) or [FromPowershellUsingDll.ps1](example/FromPowershellUsingDll.ps1) can be used to query the KeePass password store from PowerShell. With minimal modifications you can use it anywhere.
+- [CsharpExample](example/CsharpExample/src/CSharpExample/program.cs) can be used to query the KeePass password store from C#. With minimal modifications you can use it anywhere.
 
 # Why
 The plugin [KeePassHttp](https://github.com/pfn/keepasshttp/) already exists for querying the password store. 
