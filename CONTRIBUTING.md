@@ -15,7 +15,7 @@ For each contribution the following rules apply:
 2. Only the Microsoft Windows platform will be supported.
   * Contributions regarding another OS like Linux/MacOS will not be accepted.
   
-3. Only the .NET framework 2.0 (via app.config also being able to run on .NET framework 4) will be supported.
+3. Only the .NET framework 4 will be supported.
   * Contributions regarding another .NET framework like .NET core will not be accepted.
   
 4. Only the WinForms GUI framework will be supported.
