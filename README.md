@@ -70,7 +70,7 @@ Examples are found in the github directory **example**.
 - example.kdbx is a KeePass database. It's master password is **example**.
 - [FromPhp.php](example/FromPhp.php) can be used to query the KeePass password store from PHP. With minimal modifications you can use it anywhere.
 - [FromBat.bat](example/FromBat.bat) can be used to query the KeePass password store from a BAT file. With minimal modifications you can use it anywhere.
-- [FromPowershell.ps1](example/FromPowershell.ps1) or [FromPowershellUsingDll.ps1](example/FromPowershellUsingDll.ps1) can be used to query the KeePass password store from PowerShell. With minimal modifications you can use it anywhere.
+- [FromPowershell.ps1](example/FromPowershell.ps1) can be used to query the KeePass password store from PowerShell. With minimal modifications you can use it anywhere.
 - [CsharpExample](example/CsharpExample/src/CSharpExample/program.cs) can be used to query the KeePass password store from C#. With minimal modifications you can use it anywhere.
 
 # Why
