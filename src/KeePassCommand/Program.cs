@@ -1,4 +1,5 @@
-﻿using System;
+﻿using KeePassCommandDll.Communication;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
@@ -25,7 +26,7 @@ namespace KeePassCommand
             sb.AppendLine();
 
             sb.AppendLine("KeePass Commander is a plugin for the KeePass password store (https://keepass.info/).");
-            sb.AppendLine("It's purpose is to provide a communication channel for php-scripts, bat-files, powershell, ... to be able to query the KeePass password store from the commandline without configuration and without password.");
+            sb.AppendLine("It's purpose is to provide a communication channel for php-scripts, bat-files, powershell, C#, ... to be able to query the KeePass password store from the commandline without configuration and without password.");
 
             sb.AppendLine();
 

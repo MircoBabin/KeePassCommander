@@ -5,7 +5,7 @@ using System.IO;
 using System.IO.Pipes;
 using System.Text;
 
-namespace KeePassCommand
+namespace KeePassCommandDll.Communication
 {
     public class SendCommand
     {

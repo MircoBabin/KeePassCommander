@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace KeePassCommand
+namespace KeePassCommandDll.Communication
 {
     public class ResponseItem
     {
