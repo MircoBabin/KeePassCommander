@@ -1,4 +1,31 @@
 @echo off
+rem KeePass Commander
+rem https://github.com/MircoBabin/KeePassCommander - MIT license 
+rem 
+rem Copyright (c) 2018 Mirco Babin
+rem 
+rem Permission is hereby granted, free of charge, to any person
+rem obtaining a copy of this software and associated documentation
+rem files (the "Software"), to deal in the Software without
+rem restriction, including without limitation the rights to use,
+rem copy, modify, merge, publish, distribute, sublicense, and/or sell
+rem copies of the Software, and to permit persons to whom the
+rem Software is furnished to do so, subject to the following
+rem conditions:
+rem 
+rem The above copyright notice and this permission notice shall be
+rem included in all copies or substantial portions of the Software.
+rem 
+rem THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+rem EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+rem OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+rem NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+rem HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+rem WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+rem FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+rem OTHER DEALINGS IN THE SOFTWARE.
+
+
 rem This file is put in the same directory as KeePassCommand.exe.
 :keepasscommand
     rem "%1" should be entryname to be fetched
