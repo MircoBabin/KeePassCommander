@@ -1,4 +1,4 @@
-﻿using KeePassCommand;
+﻿using KeePassCommand; //see https://github.com/MircoBabin/KeePassCommander/blob/master/src/ProgrammingLanguagesConnectors/KeePassEntry.cs
 using System;
 using System.Diagnostics;
 using System.IO;
