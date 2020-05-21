@@ -1,4 +1,5 @@
-﻿using System;
+﻿using KeePassCommand;
+using System;
 using System.Diagnostics;
 using System.IO;
 
@@ -44,13 +45,24 @@ namespace CsharpExample
             }
             KeePassEntry.Initialize(dll);
 
-            var entry = KeePassEntry.get("Sample Entry");
+            KeePassEntry entry = null;
+            string title = "Sample Entry";
+            try
+            {
+                entry = KeePassEntry.getfirst(title);
+            }
+            catch { }
             if (entry == null)
             {
                 Console.WriteLine("KeePass is not started");
                 Console.WriteLine("Has KeePassCommander.dll been copied to the directory containing KeePass.exe ?");
                 Environment.Exit(2);
                 return;
+            }
+            if (entry.Title != title)
+            {
+                Console.WriteLine("KeePass Entry not found: " + title);
+                Environment.Exit(3);
             }
 
             Console.OutputEncoding = System.Text.Encoding.UTF8;

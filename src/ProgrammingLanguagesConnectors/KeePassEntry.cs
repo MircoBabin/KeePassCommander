@@ -30,7 +30,7 @@ using System;
 using System.IO;
 using System.Reflection;
 
-namespace CsharpExample
+namespace KeePassCommand
 {
     public class KeePassEntry
     {
@@ -44,7 +44,7 @@ namespace CsharpExample
         public string UrlPath { get; set; }
         public string Notes { get; set; }
 
-        public static KeePassEntry get(string title)
+        public static KeePassEntry getfirst(string title)
         {
             if (KeePassCommandDll_ApiGetfirst == null) throw new Exception("Call KeePassEntry.Initialize() first");
 
