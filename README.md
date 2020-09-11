@@ -82,6 +82,14 @@ So I build KeePassCommander.dll plugin which runs a Windows named-pipe-server in
 
 I'm using this plugin among other things to automate DeployHQ. In KeePass I store the DeployHQ API key. From a php script the API key is queried and then used. 
 
+# Debug
+
+Via KeePass commandline options this plugin can write logging. Use --KeePassCommanderDebug=*full-path-to-filename* to specify the filename.
+
+```
+KeePass.exe --debug --KeePassCommanderDebug=c:\incoming\KeePassCommander.log
+```
+
 # Contributions
 Contributions are welcome. Please read [CONTRIBUTING.md](CONTRIBUTING.md "contributing") before making any contribution!
 

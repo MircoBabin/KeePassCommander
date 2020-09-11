@@ -7,6 +7,7 @@ using System.IO;
 using System.IO.Pipes;
 using System.Text;
 using System.Threading;
+using System.Windows.Forms;
 
 namespace KeePassCommander
 {
@@ -18,12 +19,19 @@ namespace KeePassCommander
 
         private string ServerPipeName;
 
+        private TextWriter Logger = null;
+
         public override bool Initialize(IPluginHost host)
         {
             Terminate();
 
             ServerPipeName = "KeePassCommander." + Process.GetCurrentProcess().SessionId;
             KeePassHost = host;
+
+            //KeePass.exe --debug --KeePassCommanderDebug=c:\incoming\KeePassCommander.log
+            string debugFileName = host.CommandLineArgs["KeePassCommanderDebug"];
+            DebugInitialize(debugFileName);
+
             StartServer();
             return true;
         }
@@ -34,6 +42,33 @@ namespace KeePassCommander
 
             StopServer();
             KeePassHost = null;
+        }
+
+        private void DebugInitialize(string debugFilename)
+        {
+            if (String.IsNullOrEmpty(debugFilename)) return;
+
+            try
+            {
+                Logger = new StreamWriter(debugFilename);
+                ((StreamWriter)Logger).AutoFlush = true;
+
+                DebugOutputLine("Debug initialized");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("KeePassCommander debug logger failed to initialise. No logging will be performed until KeePass is restarted with a valid debug log file location. Reason: " + ex.ToString());
+            }
+        }
+
+        private void DebugOutputLine(string message)
+        {
+            if (Logger == null) return;
+
+            lock (Logger)
+            {
+                Logger.WriteLine("[" + DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + "][" + Thread.CurrentThread.ManagedThreadId + "] " + message);
+            }
         }
 
         private void StartServer()
@@ -86,46 +121,78 @@ namespace KeePassCommander
 
         private void RunServer()
         {
-            if (Stop) return;
+            if (Stop)
+            {
+                DebugOutputLine("Not starting Named Pipe Server, Stop=true (1)");
+                return;
+            }
+
             lock (ServerLock)
             {
-                if (Stop) return;
+                if (Stop)
+                {
+                    DebugOutputLine("Not starting Named Pipe Server, Stop=true (2)");
+                    return;
+                }
 
-                ServerPipe = new NamedPipeServerStream(ServerPipeName,
-                    PipeDirection.InOut,
-                    10,
-                    PipeTransmissionMode.Byte,
-                    PipeOptions.None);
+                try
+                {
+                    DebugOutputLine("Starting Named Pipe Server on \"" + ServerPipeName + "\"");
+                    ServerPipe = new NamedPipeServerStream(ServerPipeName,
+                        PipeDirection.InOut,
+                        10,
+                        PipeTransmissionMode.Byte,
+                        PipeOptions.None);
+                    DebugOutputLine("Named Pipe Server started");
+                } catch (Exception ex)
+                {
+                    DebugOutputLine("Starting Named Pipe Server failed" + Environment.NewLine + ex.ToString());
+                    Stop = true;
+                    return;
+                }
             }
 
             try
             {
+                DebugOutputLine("Waiting for connection");
                 ServerPipe.WaitForConnection();
+                DebugOutputLine("Connection received");
 
                 if (Stop)
                 {
+                    DebugOutputLine("Ending connection, Stop=true (3)");
                     ServerPipe.Dispose();
                     ServerPipe = null;
                     return;
                 }
+
+                ServerClient client;
                 lock (ServerLock)
                 {
                     if (Stop)
                     {
+                        DebugOutputLine("Ending connection, Stop=true (4)");
                         ServerPipe.Dispose();
                         ServerPipe = null;
                         return;
                     }
 
-                    ServerClient client = new ServerClient(ServerPipe);
+                    client = new ServerClient(ServerPipe);
                     ServerClients.Add(client);
-
-                    ServerPipe = null;
-                    StartServer();
-                    RunClient(client);
                 }
+
+                DebugOutputLine("Restart listening on named pipe");
+                ServerPipe = null;
+                StartServer();
+
+                DebugOutputLine("Starting run client");
+                RunClient(client);
+                DebugOutputLine("Ended run client");
             }
-            catch { }
+            catch (Exception ex)
+            {
+                DebugOutputLine("RunServer Exception:" + Environment.NewLine + ex.ToString());
+            }
         }
 
         private class ServerClient
@@ -148,6 +215,18 @@ namespace KeePassCommander
                 string output = String.Empty;
                 string command = reader.ReadLine();
                 string[] parms = command.Split('\t');
+
+                if (Logger != null)
+                {
+                    StringBuilder sb = new StringBuilder();
+                    sb.AppendLine("Received parameters:");
+                    foreach (var parm in parms)
+                    {
+                        sb.AppendLine(parm);
+                    }
+                    DebugOutputLine(sb.ToString());
+                }
+
                 if (parms.Length > 0)
                 {
                     if (parms[0] == "get")
@@ -168,7 +247,10 @@ namespace KeePassCommander
                 client.Pipe.Close();
                 client.Pipe.Dispose();
             }
-            catch { }
+            catch (Exception ex)
+            {
+                DebugOutputLine("RunClient Exception:" + Environment.NewLine + ex.ToString());
+            }
 
             if (Stop) return;
             lock (ServerLock)
@@ -179,7 +261,7 @@ namespace KeePassCommander
             }
         }
 
-        private string GetPasswordEntryField(PwEntry entry, string FieldName)
+        private string GetEntryField(PwEntry entry, string FieldName)
         {
             const string StrRefStart = @"{REF:";
             const string StrRefEnd = @"}";
@@ -201,6 +283,7 @@ namespace KeePassCommander
 
 
             int nOffset = 0;
+            int maxTries = 100;
             while (true)
             {
                 int nStart = input.IndexOf(StrRefStart, nOffset, ScMethod);
@@ -230,6 +313,8 @@ namespace KeePassCommander
                     else { nOffset = nStart + 1; continue; }
 
                     input = input.Substring(0, nStart) + strInsData + input.Substring(nEnd + StrRefEnd.Length);
+                    maxTries--;
+                    if (maxTries <= 0) break;
                 }
                 else { nOffset = nStart + 1; continue; }
             }
@@ -239,7 +324,12 @@ namespace KeePassCommander
 
         private void FindTitles(Dictionary<string, List<PwEntry>> search)
         {
-            if (search.Count == 0) return;
+            DebugOutputLine("Starting FindTitles");
+            if (search.Count == 0)
+            {
+                DebugOutputLine("Ended FindTitles, nothing to search");
+                return;
+            }
 
             foreach (var doc in KeePassHost.MainWindow.DocumentManager.Documents)
             {
@@ -247,6 +337,8 @@ namespace KeePassCommander
 
                 if (db.IsOpen)
                 {
+                    DebugOutputLine("    Database: " + db.Name);
+
                     var items = db.RootGroup.GetObjects(true, true);
                     foreach (var item in items)
                     {
@@ -254,7 +346,7 @@ namespace KeePassCommander
                         {
                             PwEntry entry = item as PwEntry;
 
-                            string title = GetPasswordEntryField(entry, PwDefs.TitleField);
+                            string title = GetEntryField(entry, PwDefs.TitleField);
                             if (search.ContainsKey(title))
                             {
                                 search[title].Add(entry);
@@ -263,10 +355,14 @@ namespace KeePassCommander
                     }
                 }
             }
+
+            DebugOutputLine("Ended FindTitles");
         }
 
         private string CommandGet(string[] parms)
         {
+            DebugOutputLine("Starting command get");
+
             StringBuilder result = new StringBuilder();
             result.AppendLine(BeginOfResponse + "[get][default-1-column]");
 
@@ -285,45 +381,56 @@ namespace KeePassCommander
 
             foreach (var keypair in titles)
             {
+                DebugOutputLine("Found entries for title: " + keypair.Key);
                 foreach (PwEntry entry in keypair.Value)
                 {
+                    DebugOutputLine("    Entry: " + entry.Strings.ReadSafe(PwDefs.TitleField));
                     try
                     {
-                        string url = GetPasswordEntryField(entry, PwDefs.UrlField);
+                        string url = GetEntryField(entry, PwDefs.UrlField);
                         string urlscheme = String.Empty;
                         string urlhost = String.Empty;
                         string urlport = String.Empty;
                         string urlpath = String.Empty;
 
-                        try
+                        if (!string.IsNullOrEmpty(url))
                         {
-                            Uri uri = new Uri(url);
-                            urlscheme = uri.Scheme;
-                            urlhost = uri.Host;
-                            if (uri.Port != -1) urlport = uri.Port.ToString();
-                            urlpath = uri.AbsolutePath;
+                            try
+                            {
+                                Uri uri = new Uri(url);
+                                urlscheme = uri.Scheme;
+                                urlhost = uri.Host;
+                                if (uri.Port != -1) urlport = uri.Port.ToString();
+                                urlpath = uri.AbsolutePath;
+                            }
+                            catch { }
                         }
-                        catch { }
 
-                        result.AppendLine(GetPasswordEntryField(entry, PwDefs.TitleField) + "\t" +
-                                          GetPasswordEntryField(entry, PwDefs.UserNameField) + "\t" +
-                                          GetPasswordEntryField(entry, PwDefs.PasswordField) + "\t" +
+                        result.AppendLine(GetEntryField(entry, PwDefs.TitleField) + "\t" +
+                                          GetEntryField(entry, PwDefs.UserNameField) + "\t" +
+                                          GetEntryField(entry, PwDefs.PasswordField) + "\t" +
                                           url + "\t" +
                                           urlscheme + "\t" +
                                           urlhost + "\t" +
                                           urlport + "\t" +
                                           urlpath + "\t" +
-                                          Convert.ToBase64String(Encoding.UTF8.GetBytes(GetPasswordEntryField(entry, PwDefs.NotesField))) + "\t");
+                                          Convert.ToBase64String(Encoding.UTF8.GetBytes(GetEntryField(entry, PwDefs.NotesField))) + "\t");
                     }
-                    catch { }
+                    catch (Exception ex)
+                    {
+                        DebugOutputLine("CommandGet Exception:" + Environment.NewLine + ex.ToString());
+                    }
                 }
             }
 
+            DebugOutputLine("Ended command get");
             return result.ToString();
         }
 
         private string CommandGetField(string[] parms)
         {
+            DebugOutputLine("Starting command getfield");
+
             StringBuilder result = new StringBuilder();
             result.AppendLine(BeginOfResponse + "[getfield][default-2-column]");
 
@@ -355,14 +462,14 @@ namespace KeePassCommander
                 {
                     result.Append(PwDefs.TitleField);
                     result.Append("\t");
-                    result.Append(GetPasswordEntryField(entry, PwDefs.TitleField));
+                    result.Append(GetEntryField(entry, PwDefs.TitleField));
                     result.Append("\t");
 
                     foreach (string fieldname in fieldnames)
                     {
                         try
                         {
-                            string value = GetPasswordEntryField(entry, fieldname);
+                            string value = GetEntryField(entry, fieldname);
 
                             result.Append(fieldname);
                             result.Append("\t");
@@ -376,11 +483,14 @@ namespace KeePassCommander
                 }
             }
 
+            DebugOutputLine("Ended command getfield");
             return result.ToString();
         }
 
         private string CommandGetAttachment(string[] parms)
         {
+            DebugOutputLine("Starting command getattachment");
+
             StringBuilder result = new StringBuilder();
             result.AppendLine(BeginOfResponse + "[getattachment][default-2-column]");
 
@@ -412,7 +522,7 @@ namespace KeePassCommander
                 {
                     result.Append(PwDefs.TitleField);
                     result.Append("\t");
-                    result.Append(GetPasswordEntryField(entry, PwDefs.TitleField));
+                    result.Append(GetEntryField(entry, PwDefs.TitleField));
                     result.Append("\t");
 
                     foreach (string attachmentname in attachmentnames)
@@ -433,11 +543,14 @@ namespace KeePassCommander
                 }
             }
 
+            DebugOutputLine("Ended command getattachment");
             return result.ToString();
         }
 
         private string CommandGetNote(string[] parms)
         {
+            DebugOutputLine("Starting command getnote");
+
             StringBuilder result = new StringBuilder();
             result.AppendLine(BeginOfResponse + "[getnote][default-1-column]");
 
@@ -455,11 +568,11 @@ namespace KeePassCommander
             {
                 foreach (PwEntry entry in keypair.Value)
                 {
-                    result.Append(GetPasswordEntryField(entry, PwDefs.TitleField));
+                    result.Append(GetEntryField(entry, PwDefs.TitleField));
                     result.Append("\t");
                     try
                     {
-                        result.Append(Convert.ToBase64String(Encoding.UTF8.GetBytes(GetPasswordEntryField(entry, PwDefs.NotesField))));
+                        result.Append(Convert.ToBase64String(Encoding.UTF8.GetBytes(GetEntryField(entry, PwDefs.NotesField))));
                         result.Append("\t");
                     }
                     catch { }
@@ -467,6 +580,7 @@ namespace KeePassCommander
                 }
             }
 
+            DebugOutputLine("Ended command getnote");
             return result.ToString();
         }
     }
