@@ -1,6 +1,6 @@
 # KeePass Commander
 KeePass Commander is a plugin for the [KeePass password store](https://keepass.info/ "KeePass"). 
-It's purpose is to provide a communication channel for php-scripts, bat-files, powershell, C#, ... to be able to query the KeePass password store from the commandline without configuration and without password.
+It's purpose is to provide a communication channel for php-scripts, bat-files, powershell, C#, git, ... to be able to query the KeePass password store from the commandline without configuration and without password.
 
 ![Screenshot](screenshot.png)
 
@@ -72,6 +72,10 @@ Examples are found in the github directory **example**.
 - [FromBat.bat](example/FromBat.bat) can be used to query the KeePass password store from a BAT file. With minimal modifications you can use it anywhere.
 - [FromPowershell.ps1](example/FromPowershell.ps1) can be used to query the KeePass password store from PowerShell. With minimal modifications you can use it anywhere.
 - [CsharpExample](example/CsharpExample/src/CsharpExample/Program.cs) can be used to query the KeePass password store from C#. With minimal modifications you can use it anywhere.
+
+# GIT
+
+Using [Git Credentials via KeePassCommander](https://github.com/MircoBabin/GitCredentialsViaKeePassCommander) the credentials for git repositories can be queried from KeePass upon a pull or push command.
 
 # Why
 The plugin [KeePassHttp](https://github.com/pfn/keepasshttp/) already exists for querying the password store. 
