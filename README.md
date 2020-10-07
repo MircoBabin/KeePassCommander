@@ -1,5 +1,5 @@
 [![Github All Releases](https://img.shields.io/github/downloads/MircoBabin/KeePassCommander/total)](https://github.com/MircoBabin/KeePassCommander/releases)
-[![License](https://img.shields.io/github/license/MircoBabin/KeePassCommander)](https://github.com/MircoBabin/KeePassCommander/blob/master/LICENSE.md)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/MircoBabin/KeePassCommander/blob/master/LICENSE.md)
 
 # KeePass Commander
 KeePass Commander is a plugin for the [KeePass password store](https://keepass.info/ "KeePass"). 
