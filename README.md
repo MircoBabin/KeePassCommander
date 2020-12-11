@@ -3,7 +3,7 @@
 
 # KeePass Commander
 KeePass Commander is a plugin for the [KeePass password store](https://keepass.info/ "KeePass"). 
-It's purpose is to provide a communication channel for php-scripts, bat-files, powershell, C#, git, ... to be able to query the KeePass password store from the commandline without configuration and without password.
+It's purpose is to provide a communication channel for php-scripts, bat-files, powershell, python, C#, git, ... to be able to query the KeePass password store from the commandline without configuration and without password.
 
 ![Screenshot](screenshot.png)
 
@@ -21,11 +21,11 @@ The minimum .NET framework required is 4.0.
 Execute **KeePassCommand.exe** without parameters to view the help.
 
 ```
-KeePassCommand 2.3
+KeePassCommand 2.4
 https://github.com/MircoBabin/KeePassCommander - MIT license
 
 KeePass Commander is a plugin for the KeePass password store (https://keepass.info/).
-It's purpose is to provide a communication channel for php-scripts, bat-files, powershell, C#, ... to be able to query the KeePass password store from the commandline without configuration and without password.
+It's purpose is to provide a communication channel for php-scripts, bat-files, powershell, python, C#, ... to be able to query the KeePass password store from the commandline without configuration and without password.
 
 Syntax: KeePassCommand.exe <command> {-out:outputfilename OR -out-utf8:outputfilename} ...
 - Unless -out or -out-utf8 is used, output will be at the console (STDOUT).
@@ -74,6 +74,7 @@ Examples are found in the github directory **example**.
 - [FromPhp.php](example/FromPhp.php) can be used to query the KeePass password store from PHP. With minimal modifications you can use it anywhere.
 - [FromBat.bat](example/FromBat.bat) can be used to query the KeePass password store from a BAT file. With minimal modifications you can use it anywhere.
 - [FromPowershell.ps1](example/FromPowershell.ps1) can be used to query the KeePass password store from PowerShell. With minimal modifications you can use it anywhere.
+- [FromPython.py](example/FromPython.py) can be used to query the KeePass password store from Python. With minimal modifications you can use it anywhere.
 - [CsharpExample](example/CsharpExample/src/CsharpExample/Program.cs) can be used to query the KeePass password store from C#. With minimal modifications you can use it anywhere.
 
 # GIT

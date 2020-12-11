@@ -60,3 +60,14 @@ urlhost   : keepass.info
 urlport   : 443
 urlpath   : /
 notes     : Notes Één €ûrò
+
+C:\Projects\KeePassCommander\example>FromPython.bat
+title     : Sample Entry
+username  : User Name
+password  : Password
+url       : https://keepass.info/
+urlscheme : https
+urlhost   : keepass.info
+urlport   : 443
+urlpath   : /
+notes     : Notes Één €ûrò
