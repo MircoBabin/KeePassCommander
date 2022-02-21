@@ -23,3 +23,4 @@ example/CsharpExample/src/.vs
 example/CsharpExample/src/CsharpExample/bin
 example/CsharpExample/src/CsharpExample/obj
 example/CsharpExample/src/CsharpExample/.vs
+*.user

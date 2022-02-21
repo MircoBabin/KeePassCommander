@@ -180,7 +180,7 @@ namespace KeePassCommand
                         throw new Exception("getattachmentraw must query exactly one entry");
 
                     List<ResponseItem> entry = send.Response.Entries[0];
-                    if (entry.Count != 2 || entry[0].Parts[0] != "title")
+                    if (entry.Count != 2 || entry[0].Parts[0].ToLowerInvariant() != "title")
                         throw new Exception("getattachmentraw must query exactly one entry");
 
                     byte[] attachment = Convert.FromBase64String(entry[1].Parts[1]);
