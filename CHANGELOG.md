@@ -3,7 +3,7 @@
 ## Version 2.5
 Release date: 14 feb 2022
 
-* fix: getattachmentraw
+* fix: getattachmentraw - see also pull request #6 by [kkum](https://github.com/kkum)
 * fix: getfield
 
 ## Version 2.4
