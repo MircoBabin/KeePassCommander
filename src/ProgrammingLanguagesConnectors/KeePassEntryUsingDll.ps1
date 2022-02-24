@@ -42,7 +42,7 @@ function KeePassEntry
     $entries = [KeePassCommandDll.Api]::get($title)
     
     if ($entries.Count -eq 0) {
-        return null;
+        return $null;
     }
     $entry = $entries[0]
     
