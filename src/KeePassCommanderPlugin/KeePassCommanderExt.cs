@@ -460,7 +460,7 @@ namespace KeePassCommander
             {
                 foreach (PwEntry entry in keypair.Value)
                 {
-                    result.Append(PwDefs.TitleField);
+                    result.Append("title");
                     result.Append("\t");
                     result.Append(GetEntryField(entry, PwDefs.TitleField));
                     result.Append("\t");
@@ -520,7 +520,7 @@ namespace KeePassCommander
             {
                 foreach (PwEntry entry in keypair.Value)
                 {
-                    result.Append(PwDefs.TitleField);
+                    result.Append("title");
                     result.Append("\t");
                     result.Append(GetEntryField(entry, PwDefs.TitleField));
                     result.Append("\t");
