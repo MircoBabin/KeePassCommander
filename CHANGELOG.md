@@ -9,9 +9,7 @@ Release date: 14 feb 2022
 ## Version 2.4
 Release date: 11 dec 2020
 
-* Prevent infinite Field Reference resolving
-* Add logging via --KeePassCommanderDebug=c:\incoming\KeePassCommander.log
-* Solved restarting listing on named pipe
+* Added Python connector
 
 ## Version 2.3
 Release date: 8 oct 2020
