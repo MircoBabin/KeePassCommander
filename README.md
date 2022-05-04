@@ -16,6 +16,8 @@ Download the zip and unpack it in the KeePass directory where KeePass.exe is loc
 The minimum .NET framework required is 4.0.
 .NET framework version 3.5 is the first framework to implement the System.IO.Pipes namespace, but KeePass only supports v4.0 and v2.0.50727.
 
+*For unattended automatic installation scripts, read the section "Automatic installation scripts" lower down the page.*
+
 # Help
 
 Execute **KeePassCommand.exe** without parameters to view the help.
@@ -89,6 +91,14 @@ And I don't want to "pair" with a code, because I want to communicate from the c
 So I build KeePassCommander.dll plugin which runs a Windows named-pipe-server inside KeePass. And a KeePassCommand.exe commandline tool to communicate with KeePassCommander.dll. 
 
 I'm using this plugin among other things to automate DeployHQ. In KeePass I store the DeployHQ API key. From a php script the API key is queried and then used. 
+
+# Automatic installation scripts
+For unattended installation scripts the following flow can be used for the latest version:
+
+1) Download https://github.com/MircoBabin/KeePassCommander/releases/latest/download/release.download.zip.url-location
+2) Read the text of this file into **latest-download-url**. The file only contains an url, so the encoding is ASCII. *The encoding UTF-8 may also be used to read the file, because ASCII is UTF-8 encoding.*
+3) Download the zip from the **latest-download-url** to local file **KeePassCommander.zip**. *Each release carries the version number in the filename. To prevent not knowing the downloaded filename, download to a fixed local filename.*
+4) Unpack the downloaded **KeePassCommander.zip** in the KeePass directory where KeePass.exe is located.
 
 # Debug
 

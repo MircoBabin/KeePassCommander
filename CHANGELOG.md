@@ -1,5 +1,11 @@
 # KeePassCommander changelog
 
+## Version 2.6
+Release date: 4 may 2022
+
+* renamed release distribution to KeePassCommander-x.x.zip
+* for automatic installation scripts https://github.com/MircoBabin/KeePassCommander/releases/latest/download/release.download.zip.url-location is a textfile and will contain an url to the latest release zip file
+
 ## Version 2.5
 Release date: 14 feb 2022
 

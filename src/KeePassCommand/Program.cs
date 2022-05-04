@@ -8,11 +8,16 @@ namespace KeePassCommand
 {
     class Program
     {
+        private static Version GetVersion()
+        {
+            return System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
+        }
+
         private static void ShowHelp()
         {
             StringBuilder sb = new StringBuilder();
 
-            var version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
+            var version = GetVersion();
 
             sb.Append("KeePassCommand ");
             sb.Append(version.Major + "." + version.Minor);
@@ -123,6 +128,13 @@ namespace KeePassCommand
                 if (args.Length == 0)
                 {
                     ShowHelp();
+                    return;
+                }
+
+                if (args.Length == 1 && args[0].ToLower() == "--version")
+                {
+                    var version = GetVersion();
+                    Console.Write(version.Major + "." + version.Minor);
                     return;
                 }
 
