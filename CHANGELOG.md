@@ -1,5 +1,11 @@
 # KeePassCommander changelog
 
+## Version 2.7
+Release date: 14 july 2022
+
+* implemented the KeePass check for updates mechanism.
+* updated the information exposed by assembly properties.
+
 ## Version 2.6
 Release date: 4 may 2022
 
