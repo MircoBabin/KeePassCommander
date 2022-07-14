@@ -6,11 +6,8 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("KeePassCommander")]
-[assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("KeePass Plugin")]
-[assembly: AssemblyCopyright("MIT license")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

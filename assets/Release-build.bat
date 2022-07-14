@@ -64,4 +64,13 @@ echo.
 echo Created "Release\release.download.zip.url-location" 
 echo.
 
+rem https://github.com/MircoBabin/KeePassCommander/releases/latest/download/keepass.plugin.version.txt
+echo :>"Release\keepass.plugin.version.txt"
+echo KeePassCommander:%KeepassCommandReleaseVersion%>>"Release\keepass.plugin.version.txt"
+echo :>>"Release\keepass.plugin.version.txt"
+
+echo.
+echo Created "Release\keepass.plugin.version.txt" 
+echo.
+
 pause

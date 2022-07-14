@@ -13,6 +13,8 @@ namespace KeePassCommander
 {
     public sealed class KeePassCommanderExt : Plugin
     {
+        public override string UpdateUrl { get { return "https://github.com/MircoBabin/KeePassCommander/releases/latest/download/keepass.plugin.version.txt"; } }
+
         private IPluginHost KeePassHost = null;
         private const string BeginOfResponse = "\t\t\t[--- begin of response ---]\t\t\t";
         private const string EndOfResponse = "\t\t\t[--- end of response ---]\t\t\t";
