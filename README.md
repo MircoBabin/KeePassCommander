@@ -2,8 +2,8 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/MircoBabin/KeePassCommander/blob/master/LICENSE.md)
 
 # KeePass Commander
-KeePass Commander is a plugin for the [KeePass password store](https://keepass.info/ "KeePass"). 
-It's purpose is to provide a communication channel for php-scripts, bat-files, powershell, python, C#, git, ... to be able to query the KeePass password store from the commandline without configuration and without password.
+KeePass Commander is a plugin for the [KeePass password store](https://keepass.info/ "KeePass") program. 
+It is a command-line tool that provides a communication channel for PHP scripts, Windows CMD/BAT/PowerShell scripts, Python, C#, git, etc. to query the KeePass password store without requiring configuration or passwords.
 
 ![Screenshot](screenshot.png)
 
