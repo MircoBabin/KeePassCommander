@@ -23,11 +23,11 @@ The minimum .NET framework required is 4.0.
 Execute **KeePassCommand.exe** without parameters to view the help.
 
 ```
-KeePassCommand 2.7
+KeePassCommand 2.8
 https://github.com/MircoBabin/KeePassCommander - MIT license
 
 KeePass Commander is a plugin for the KeePass password store (https://keepass.info/).
-It's purpose is to provide a communication channel for php-scripts, bat-files, powershell, python, C#, ... to be able to query the KeePass password store from the commandline without configuration and without password.
+It is a command-line tool that provides a communication channel for PHP scripts, Windows CMD/BAT/PowerShell scripts, Python, C#, git, etc. to query the KeePass password store without requiring configuration or passwords.
 
 Syntax: KeePassCommand.exe <command> {-out:outputfilename OR -out-utf8:outputfilename} ...
 - Unless -out or -out-utf8 is used, output will be at the console (STDOUT).
