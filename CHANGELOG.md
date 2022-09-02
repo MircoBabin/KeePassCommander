@@ -1,6 +1,6 @@
 # KeePassCommander changelog
 
-## Version 2.7
+## Version 2.8
 Release date: 2 september 2022
 
 * fix: description of KeePassCommander - see also pull request #9 by [rasa](https://github.com/rasa)
