@@ -1,6 +1,12 @@
 # KeePassCommander changelog
 
 ## Version 2.7
+Release date: 2 september 2022
+
+* fix: description of KeePassCommander - see also pull request #9 by [rasa](https://github.com/rasa)
+* add: KeePassEntry.php ability to also retrieve fields and attachments.
+
+## Version 2.7
 Release date: 14 july 2022
 
 * implemented the KeePass check for updates mechanism.
