@@ -16,8 +16,8 @@ namespace KeePassCommander
         public override string UpdateUrl { get { return "https://github.com/MircoBabin/KeePassCommander/releases/latest/download/keepass.plugin.version.txt"; } }
 
         private IPluginHost KeePassHost = null;
-        private const string BeginOfResponse = "\t\t\t[--- begin of response ---]\t\t\t";
-        private const string EndOfResponse = "\t\t\t[--- end of response ---]\t\t\t";
+        private const string BeginOfResponse = "\t\t\t[--- begin of response 3.0 ---]\t\t\t";
+        private const string EndOfResponse = "\t\t\t[--- end of response 3.0 ---]\t\t\t";
 
         private string ServerPipeName;
 
@@ -373,7 +373,7 @@ namespace KeePassCommander
                 for (int i = 1; i < parms.Length; i++)
                 {
                     string name = parms[i].Trim();
-                    if (name.Length > 0)
+                    if (!string.IsNullOrEmpty(name))
                     {
                         titles.Add(name, new List<PwEntry>());
                     }
@@ -451,7 +451,7 @@ namespace KeePassCommander
                 for (int i = 2; i < parms.Length; i++)
                 {
                     string name = parms[i].Trim();
-                    if (name.Length > 0)
+                    if (!string.IsNullOrEmpty(name))
                     {
                         fieldnames.Add(name);
                     }
@@ -475,7 +475,7 @@ namespace KeePassCommander
 
                             result.Append(fieldname);
                             result.Append("\t");
-                            result.Append(value);
+                            result.Append(Convert.ToBase64String(Encoding.UTF8.GetBytes(value)));
                             result.Append("\t");
                         }
                         catch { }
@@ -511,7 +511,7 @@ namespace KeePassCommander
                 for (int i = 2; i < parms.Length; i++)
                 {
                     string name = parms[i].Trim();
-                    if (name.Length > 0)
+                    if (!string.IsNullOrEmpty(name))
                     {
                         attachmentnames.Add(name);
                     }
@@ -558,11 +558,15 @@ namespace KeePassCommander
 
             Dictionary<string, List<PwEntry>> titles = new Dictionary<string, List<PwEntry>>();
             {
-                string name = (parms.Length >= 2 ? parms[1].Trim() : String.Empty);
-                if (!string.IsNullOrEmpty(name))
+                for (int i = 1; i < parms.Length; i++)
                 {
-                    titles.Add(name, new List<PwEntry>());
+                    string name = parms[i].Trim();
+                    if (!string.IsNullOrEmpty(name))
+                    {
+                        titles.Add(name, new List<PwEntry>());
+                    }
                 }
+
                 FindTitles(titles);
             }
 

@@ -14,8 +14,8 @@ namespace KeePassCommandDll.Communication
 
         private StreamReader reader;
 
-        private const string BeginOfResponse = "\t\t\t[--- begin of response ---]\t\t\t";
-        private const string EndOfResponse = "\t\t\t[--- end of response ---]\t\t\t";
+        private const string BeginOfResponse = "\t\t\t[--- begin of response 3.0 ---]\t\t\t";
+        private const string EndOfResponse = "\t\t\t[--- end of response 3.0 ---]\t\t\t";
 
         public Response Response = new Response();
         private string ResponseForCommand;
