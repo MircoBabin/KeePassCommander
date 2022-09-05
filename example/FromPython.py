@@ -17,21 +17,32 @@ if not os.path.exists(KeePassEntry_py):
 KeePassEntryModule = imp.load_source('KeePassEntryModule', KeePassEntry_py)
 
 # BEGIN example
-entry = KeePassEntryModule.KeePassEntry('Sample Entry')
+options = dict()
+options['FieldNames'] = ['extra field 1', 'extra password 1']
+options['AttachmentNames'] = ['example_attachment.txt']
+
+entry = KeePassEntryModule.KeePassEntry('Sample Entry', options)
 if (len(entry['title']) == 0):
   print "KeePass is not started"
   print "Has KeePassCommander.dll been copied to the directory containing KeePass.exe ?"
   sys.exit(2)
   
-print "title     : " + entry['title']
-print "username  : " + entry['username']
-print "password  : " + entry['password']
-print "url       : " + entry['url']
-print "urlscheme : " + entry['urlscheme']
-print "urlhost   : " + entry['urlhost']
-print "urlport   : " + entry['urlport']
-print "urlpath   : " + entry['urlpath']
-print "notes     : " + entry['notes']
+print "title      : " + entry['title']
+print "username   : " + entry['username']
+print "password   : " + entry['password']
+print "url        : " + entry['url']
+print "urlscheme  : " + entry['urlscheme']
+print "urlhost    : " + entry['urlhost']
+print "urlport    : " + entry['urlport']
+print "urlpath    : " + entry['urlpath']
+print "notes      : " + entry['notes']
+
+print "fields     : "
+print entry['fields']
+
+print "attachments: "
+print entry['attachments']
+
 # END example
 
 #exit

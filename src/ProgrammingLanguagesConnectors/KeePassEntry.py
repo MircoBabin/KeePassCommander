@@ -31,73 +31,179 @@ import inspect, os.path
 import subprocess
 import base64
 
-def KeePassEntry(title):
-  entry_title = '';
-  entry_username = '';
-  entry_password = '';
-  entry_url = '';
-  entry_urlscheme = '';
-  entry_urlhost = '';
-  entry_urlport = '';
-  entry_urlpath = '';
-  entry_notes = '';
+def KeePassEntry(title, options = None):
+  entry = dict()
+  entry['title'] = ''
+  entry['username'] = ''
+  entry['password'] = ''
+  entry['url'] = ''
+  entry['urlscheme'] = ''
+  entry['urlhost'] = ''
+  entry['urlport'] = ''
+  entry['urlpath'] = ''
+  entry['notes'] = ''
+  
+  entry['fields'] = []
 
-  # get path of this file KeePassEntry.py
-  module_filename = inspect.getframeinfo(inspect.currentframe()).filename
-  module_path     = os.path.dirname(os.path.abspath(module_filename))
+  entry['attachments'] = []
   
-  KeePassCommandExe = os.path.join(module_path, "KeePassCommand.exe")
+  def Get(KeePassCommandExe, title):
+    lines = subprocess.check_output([KeePassCommandExe, 'get', title],universal_newlines=True)
   
+    titleFound = False
+    state = 0
+    for line in lines.splitlines(False):
+      if (len(line) >= 2):
+        if (state == 0):
+          if (line[0:2] == "B\t"):
+            state = 1
+        else:
+          if (line[0:2] == "I\t"):
+            value = line[2:]
+            
+            if (state == 1):
+              if (value == title):
+                entry['title'] = value
+                titleFound = True
+                state += 1
+              else:
+                state = 0
+            elif (state == 2):
+              entry['username'] = value
+              state += 1
+            elif (state == 3):
+              entry['password'] = value
+              state += 1
+            elif (state == 4):
+              entry['url'] = value
+              state += 1
+            elif (state == 5):
+              entry['urlscheme'] = value
+              state += 1
+            elif (state == 6):
+              entry['urlhost'] = value
+              state += 1
+            elif (state == 7):
+              entry['urlport'] = value
+              state += 1
+            elif (state == 8):
+              entry['urlpath'] = value
+              state += 1
+            elif (state == 9):
+              if (len(value) > 0):
+                value_decoded_bytes = base64.b64decode(value.encode('ascii'));
+                entry['notes'] = value_decoded_bytes.decode('utf-8')
+              state += 1
+          elif (line[0:2] == "E\t"):
+            state = 0
+            if (titleFound):
+              break
+  
+  def GetField(KeePassCommandExe, fieldNames):
+    lines = subprocess.check_output([KeePassCommandExe, 'getfield', title] + fieldNames,universal_newlines=True)
+  
+    titleFound = False
+    state = 0
+    for line in lines.splitlines(False):
+      if (len(line) >= 2):
+        if (state == 0):
+          if (line[0:2] == "B\t"):
+            state = 1
+        else:
+          if (line[0:2] == "I\t"):
+            name = ''
+            value = line[2:]
+            p = value.find("\t")
+            if p >= 0:
+              name = value[:p]
+              value = value[p+1:]
+            else:
+              name = ''
+              value = ''
+            
+            if (state == 1):
+              if (name == 'title' and value == title):
+                titleFound = True
+                state += 1
+              else:
+                state = 0
+            elif (state == 2):
+              value_decoded_bytes = base64.b64decode(value.encode('ascii'));
+            
+              field = dict();
+              field['name'] = name
+              field['value'] = value_decoded_bytes.decode('utf-8')
+              entry['fields'] += [field];
+              
+          elif (line[0:2] == "E\t"):
+            state = 0
+            if (titleFound):
+              break
+  
+  def GetAttachment(KeePassCommandExe, attachmentNames):
+    lines = subprocess.check_output([KeePassCommandExe, 'getattachment', title] + attachmentNames,universal_newlines=True)
+  
+    titleFound = False
+    state = 0
+    for line in lines.splitlines(False):
+      if (len(line) >= 2):
+        if (state == 0):
+          if (line[0:2] == "B\t"):
+            state = 1
+        else:
+          if (line[0:2] == "I\t"):
+            name = ''
+            value = line[2:]
+            p = value.find("\t")
+            if p >= 0:
+              name = value[:p]
+              value = value[p+1:]
+            else:
+              name = ''
+              value = ''
+            
+            if (state == 1):
+              if (name == 'title' and value == title):
+                titleFound = True
+                state += 1
+              else:
+                state = 0
+            elif (state == 2):
+              attachment = dict();
+              attachment['name'] = name
+              attachment['value'] = base64.b64decode(value.encode('ascii'));
+              entry['attachments'] += [attachment];
+              
+          elif (line[0:2] == "E\t"):
+            state = 0
+            if (titleFound):
+              break
+              
+  KeePassCommandExe = None;
+  fieldNames = None;
+  attachmentNames = None;
+  if (isinstance(options, dict)):
+    if ("KeePassCommandExe" in options):
+      KeePassCommandExe = options["KeePassCommandExe"]
+    if ("FieldNames" in options):
+      fieldNames = options["FieldNames"]
+    if ("AttachmentNames" in options):
+      attachmentNames = options["AttachmentNames"]
+       
+  if (KeePassCommandExe is None):
+    # get path of this file KeePassEntry.py
+    module_filename = inspect.getframeinfo(inspect.currentframe()).filename
+    module_path     = os.path.dirname(os.path.abspath(module_filename))
+    KeePassCommandExe = os.path.join(module_path, "KeePassCommand.exe")
   if not os.path.exists(KeePassCommandExe):
     raise Exception("KeePassCommand.exe not found: " + KeePassCommandExe)
   
-  lines = subprocess.check_output([KeePassCommandExe, 'get', title],universal_newlines=True)
-  
-  state = 0
-  for line in lines.splitlines(False):
-    if (len(line) >= 2):
-      if (state == 0):
-        if (line[0:2] == "B\t"):
-          state = 1
-      else:
-        if (line[0:2] == "I\t"):
-          line = line[2:]
-          
-          if (state == 1):
-            entry_title = line
-          elif (state == 2):
-            entry_username = line
-          elif (state == 3):
-            entry_password = line
-          elif (state == 4):
-            entry_url = line
-          elif (state == 5):
-            entry_urlscheme = line
-          elif (state == 6):
-            entry_urlhost = line
-          elif (state == 7):
-            entry_urlport = line
-          elif (state == 8):
-            entry_urlpath = line
-          elif (state == 9):
-            if (len(line) > 0):
-              line_decoded_bytes = base64.b64decode(line.encode('ascii'));
-              entry_notes = line_decoded_bytes.decode('utf-8')
-              
-          state += 1
-        elif (line[0:2] == "E\t"):
-          state = 0
-          if (len(entry_title) > 0):
-            break
-            
-  result = dict()
-  result['title'] = entry_title
-  result['username'] = entry_username
-  result['password'] = entry_password
-  result['url'] = entry_url
-  result['urlscheme'] = entry_urlscheme
-  result['urlhost'] = entry_urlhost
-  result['urlport'] = entry_urlport
-  result['urlpath'] = entry_urlpath
-  result['notes'] = entry_notes
-  return result
+  Get(KeePassCommandExe, title)
+  if (entry['title'] == title):
+    if not fieldNames is None:
+      GetField(KeePassCommandExe, fieldNames)
+
+    if not attachmentNames is None:
+      GetAttachment(KeePassCommandExe, attachmentNames)
+      
+  return entry
