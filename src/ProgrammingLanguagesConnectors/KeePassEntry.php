@@ -71,12 +71,12 @@ class KeePassEntry
         
         $this->attachments = array();
         
-        $cmd = null;
+        $KeePassCommandExe = null;
         $fieldNames = null;
         $attachmentNames = null;
         if (is_array($options)) {
-            if (isset($options['KeePassCommand.exe']) && is_string($options['KeePassCommand.exe'])) {
-                $cmd = $options['KeePassCommand.exe'];
+            if (isset($options['KeePassCommandExe']) && is_string($options['KeePassCommandExe'])) {
+                $KeePassCommandExe = $options['KeePassCommandExe'];
             }
             
             if (isset($options['FieldNames']) && is_array($options['FieldNames'])) {
@@ -88,30 +88,30 @@ class KeePassEntry
             }
         }
 
-        if ($cmd === null) {
-            $cmd = __DIR__ . '/KeePassCommand.exe';
+        if ($KeePassCommandExe === null) {
+            $KeePassCommandExe = __DIR__ . '/KeePassCommand.exe';
         }
-        $cmd = str_replace('/', '\\', $cmd);
-        if (!file_exists($cmd)) {
-            throw new \Exception('KeePassCommand.exe not found: ' . $cmd);
+        $KeePassCommandExe = str_replace('/', '\\', $KeePassCommandExe);
+        if (!file_exists($KeePassCommandExe)) {
+            throw new \Exception('KeePassCommand.exe not found: ' . $KeePassCommandExe);
         }
-        $cmd = '"'.$cmd.'"';
+        $KeePassCommandExe = '"'.$KeePassCommandExe.'"';
         
-        $this->Get($cmd, $entryname);
+        $this->Get($KeePassCommandExe, $entryname);
         if ($this->title === $entryname) {
             if (is_array($fieldNames)) {
-                $this->GetField($cmd, $fieldNames);
+                $this->GetField($KeePassCommandExe, $fieldNames);
             }
             
             if (is_array($attachmentNames)) {
-                $this->GetAttachment($cmd, $attachmentNames);
+                $this->GetAttachment($KeePassCommandExe, $attachmentNames);
             }
         }
     }
         
-    private function Get($cmd, $entryname) {
-        $cmd .= ' get ' . escapeshellarg($entryname);
-        $output = shell_exec($cmd);
+    private function Get($KeePassCommandExe, $entryname) {
+        $KeePassCommandExe .= ' get ' . escapeshellarg($entryname);
+        $output = shell_exec($KeePassCommandExe);
         
         $lines = explode("\n", $output);
         $titleFound = false;
@@ -182,12 +182,12 @@ class KeePassEntry
         }
     }
 
-    private function GetField($cmd, $fieldNames) {
-        $cmd .= ' getfield ' . escapeshellarg($this->title);
+    private function GetField($KeePassCommandExe, $fieldNames) {
+        $KeePassCommandExe .= ' getfield ' . escapeshellarg($this->title);
         foreach($fieldNames as $name) {
-            $cmd .= ' '.escapeshellarg($name);
+            $KeePassCommandExe .= ' '.escapeshellarg($name);
         }
-        $output = shell_exec($cmd);
+        $output = shell_exec($KeePassCommandExe);
         
         $lines = explode("\n", $output);
         $titleFound = false;
@@ -201,6 +201,7 @@ class KeePassEntry
                     break;
                 default:
                     if (substr($line, 0, 2) === "I\t") {
+                        $name = '';
                         $value = substr($line,2);
                         $p = strpos($value, "\t");
                         if ($p !== false) {
@@ -222,7 +223,7 @@ class KeePassEntry
                                 break;
                             case 2:
                                 if ($name !== '') {
-                                    $this->fields[$name] = $value;
+                                    $this->fields[$name] = base64_decode($value);
                                 }
                                 break;
                         }
@@ -235,12 +236,12 @@ class KeePassEntry
         }
     }
     
-    private function GetAttachment($cmd, $attachmentNames) {
-        $cmd .= ' getattachment ' . escapeshellarg($this->title);
+    private function GetAttachment($KeePassCommandExe, $attachmentNames) {
+        $KeePassCommandExe .= ' getattachment ' . escapeshellarg($this->title);
         foreach($attachmentNames as $name) {
-            $cmd .= ' '.escapeshellarg($name);
+            $KeePassCommandExe .= ' '.escapeshellarg($name);
         }
-        $output = shell_exec($cmd);
+        $output = shell_exec($KeePassCommandExe);
         
         $lines = explode("\n", $output);
         $titleFound = false;

@@ -1,7 +1,10 @@
 <?php
 
 function Example() {
-    $entry = new \KeePassCommander\KeePassEntry('Sample Entry');
+    $entry = new \KeePassCommander\KeePassEntry('Sample Entry', [
+        'FieldNames' => [ 'extra field 1', 'extra password 1' ],
+        'AttachmentNames' => [ 'example_attachment.txt' ],
+    ]);
     if (empty($entry->title)) {
         echo 'KeePass is not started'."\r\n";
         echo 'Has KeePassCommander.dll been copied to the directory containing KeePass.exe ?'. "\r\n";
