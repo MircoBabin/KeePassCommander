@@ -47,13 +47,22 @@ namespace KeePassCommand
             sb.AppendLine("* Basic get");
             sb.AppendLine("KeePassCommand.exe get \"KeePass-entry-title\" \"KeePass-entry-title\" ...");
             sb.AppendLine("e.g. KeePassCommand.exe get \"Sample Entry\"");
-            sb.AppendLine("- \"Notes\" are outputted as UTF-8, base64 encoded.");
+            sb.AppendLine("- \"Note\" is outputted as UTF-8, base64 encoded.");
 
             sb.AppendLine();
 
             sb.AppendLine("* Advanced get string field");
             sb.AppendLine("KeePassCommand.exe getfield \"KeePass-entry-title\" \"fieldname\" \"fieldname\" ...");
             sb.AppendLine("e.g. KeePassCommand.exe getfield \"Sample Entry\" \"extra field 1\" \"extra password 1\"");
+            sb.AppendLine("- \"Value\" is outputted as UTF-8, base64 encoded.");
+
+            sb.AppendLine();
+
+            sb.AppendLine("* Advanced get string field raw into file");
+            sb.AppendLine("KeePassCommand.exe getfieldraw <-out-utf8:outputfile or -out:> \"KeePass-entry-title\" \"fieldname\"");
+            sb.AppendLine("e.g. KeePassCommand.exe getfieldraw -out-utf8:myfield.txt \"Sample Entry\" \"extra field 1\"");
+            sb.AppendLine("- With -out-utf8, \"Value\" is outputted as UTF-8.");
+            sb.AppendLine("- With -out, \"Value\" is outputted in ANSI codepage.");
 
             sb.AppendLine();
 
@@ -71,18 +80,18 @@ namespace KeePassCommand
 
             sb.AppendLine();
 
-            sb.AppendLine("* Advanced get notes");
+            sb.AppendLine("* Advanced get note");
             sb.AppendLine("KeePassCommand.exe getnote \"KeePass-entry-title\" \"KeePass-entry-title\" ...");
             sb.AppendLine("e.g. KeePassCommand.exe getnote \"Sample Entry\"");
-            sb.AppendLine("- \"Notes\" are outputted as UTF-8, base64 encoded.");
+            sb.AppendLine("- \"Note\" is outputted as UTF-8, base64 encoded.");
 
             sb.AppendLine();
 
-            sb.AppendLine("* Advanced get notes into file");
+            sb.AppendLine("* Advanced get note into file");
             sb.AppendLine("KeePassCommand.exe getnoteraw <-out-utf8:outputfile or -out:> \"KeePass-entry-title\"");
             sb.AppendLine("e.g. KeePassCommand.exe getnoteraw -out-utf8:mynote.txt \"Sample Entry\"");
-            sb.AppendLine("- With -out-utf8, \"Notes\" are outputted as UTF-8.");
-            sb.AppendLine("- With -out, \"Notes\" are outputted in ANSI codepage.");
+            sb.AppendLine("- With -out-utf8, \"Note\" is outputted as UTF-8.");
+            sb.AppendLine("- With -out, \"Note\" is outputted in ANSI codepage.");
 
             sb.AppendLine();
             sb.AppendLine("--- LICENSE ---");
@@ -156,17 +165,25 @@ namespace KeePassCommand
                         if (String.IsNullOrEmpty(outcommand))
                         {
                             outcommand = arg;
-                            if (arg == "getattachmentraw")
+                            if (outcommand == "get")
+                            {
+                                command.Append("get");
+                            }
+                            else if (outcommand == "getfield" || outcommand == "getfieldraw")
+                            {
+                                command.Append("getfield");
+                            }
+                            else if (outcommand == "getattachment" || outcommand == "getattachmentraw")
                             {
                                 command.Append("getattachment");
                             }
-                            else if (arg == "getnoteraw")
+                            else if (outcommand == "getnote" || outcommand == "getnoteraw")
                             {
                                 command.Append("getnote");
                             }
                             else
                             {
-                                command.Append(arg);
+                                throw new Exception("unknown command: " + outcommand);
                             }
                         }
                         else
@@ -179,6 +196,29 @@ namespace KeePassCommand
                 }
 
                 SendCommand send = new SendCommand(command.ToString());
+
+                if (outcommand == "getfieldraw")
+                {
+                    if (outfile.Length == 0)
+                        throw new Exception("getfieldraw must be used in combination with -out: or -out-utf8:");
+
+                    if (send.ResponseType != SendCommand.ResponseLayoutType.default_2_column)
+                        throw new Exception("getfieldraw response type should be default_2_column, but is: " + send.ResponseType.ToString());
+
+                    if (send.Response.Entries.Count != 1)
+                        throw new Exception("getfieldraw must query exactly one entry");
+
+                    List<ResponseItem> entry = send.Response.Entries[0];
+                    if (entry.Count != 2 || entry[0].Parts[0] != "title")
+                        throw new Exception("getfieldraw must query exactly one entry");
+
+                    string fieldvalue = Encoding.UTF8.GetString(Convert.FromBase64String(entry[1].Parts[1]));
+                    using (StreamWriter file = new StreamWriter(outfile, false, outfile_encoding))
+                    {
+                        file.Write(fieldvalue.ToString());
+                    }
+                    return;
+                }
 
                 if (outcommand == "getattachmentraw")
                 {
