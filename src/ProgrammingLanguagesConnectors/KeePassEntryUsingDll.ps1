@@ -30,10 +30,36 @@
 function KeePassEntry
 {
     param (
-        [Parameter(Mandatory=$true)][string]$title = ""
+        [Parameter(Mandatory=$true)][string]$title = "",
+        [Parameter(Mandatory=$false)]$options = $null
      )
      
-    $KeePassCommandDll = Join-Path -Path $PSScriptRoot  -ChildPath "KeePassCommandDll.dll"
+    $KeePassCommandDll = $null
+    $fieldNames = $null
+    $attachmentNames = $null
+    if ($options -is [PSCustomObject]) {
+        if ($options.psobject.properties.match('KeePassCommandDll') ) {
+            if ($options.KeePassCommandDll -is [string]) {
+                $KeePassCommandDll = $options.KeePassCommandDll
+            }
+        }
+        
+        if ($options.psobject.properties.match('FieldNames') ) {
+            if ($options.FieldNames -is [array]) {
+                $fieldNames = $options.FieldNames
+            }
+        }
+        
+        if ($options.psobject.properties.match('AttachmentNames') ) {
+            if ($options.AttachmentNames -is [array]) {
+                $attachmentNames = $options.AttachmentNames
+            }
+        }
+    }
+    
+    if ($KeePassCommandDll -eq $null) {
+        $KeePassCommandDll = Join-Path -Path $PSScriptRoot -ChildPath "KeePassCommandDll.dll"
+    }
     if (-Not (Test-Path $KeePassCommandDll)) {
         Throw "KeePassCommandDll.dll not found: " + $KeePassCommandDll
     }
@@ -46,6 +72,27 @@ function KeePassEntry
     }
     $entry = $entries[0]
     
+    $fields = @()
+    if ($fieldNames -is [array]) {
+        foreach($field in [KeePassCommandDll.Api]::getfield($title, $fieldNames)) {
+            $fields += [pscustomobject]@{
+                name = $field.Name
+                value = $field.Value
+            }
+        }
+    }
+    
+    $attachments = @()
+    if ($attachmentNames -is [array]) {
+        foreach($field in [KeePassCommandDll.Api]::getattachment($title, $attachmentNames)) {
+            $attachments += [pscustomobject]@{
+                name = $field.Name
+                value = $field.Value
+            }
+        }
+    }
+    
+    
     return [pscustomobject]@{
         title = $entry.Title
         username = $entry.Username
@@ -56,5 +103,9 @@ function KeePassEntry
         urlport = $entry.UrlPort
         urlpath = $entry.UrlPath
         notes = $entry.Notes
+        
+        fields = $fields
+        
+        attachments = $attachments
     }
 }

@@ -11,7 +11,12 @@ function ExitWithCode
 
 function Example
 {
-    $object = KeePassEntry -title "Sample Entry"
+    $options = [pscustomobject]@{
+        FieldNames = @('extra field 1', 'extra password 1')
+        AttachmentNames = @('example_attachment.txt')
+    }
+    
+    $object = KeePassEntry -title "Sample Entry" -options $options
     if ($object -eq $null) {
         Write-Host "KeePass is not started"
         Write-Host "Has KeePassCommander.dll been copied to the directory containing KeePass.exe ?"
@@ -22,7 +27,7 @@ function Example
     return 0
 }
 
-# find KeePassEntry.ps1
+# find KeePassEntryUsingDll.ps1
 $KeePassEntryUsingDll_ps1 = Join-Path -Path $PSScriptRoot  -ChildPath "KeePassEntryUsingDll.ps1"
 if (-Not (Test-Path $KeePassEntryUsingDll_ps1)) {
     $KeePassEntryUsingDll_ps1 = Join-Path -Path $PSScriptRoot  -ChildPath "..\bin\release\KeePassEntryUsingDll.ps1"
@@ -32,7 +37,7 @@ if (-Not (Test-Path $KeePassEntryUsingDll_ps1)) {
     }
 } 
 
-# include KeePassEntry.ps1 containing function KeePassEntry
+# include KeePassEntryUsingDll.ps1 containing function KeePassEntry
 . $KeePassEntryUsingDll_ps1
 
 # BEGIN example
