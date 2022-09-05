@@ -82,5 +82,91 @@ namespace KeePassCommandDll
 
             return results;
         }
+
+        public static List<ApiGetFieldResponse> getfield(string KeePassEntryTitle, string[] FieldNames)
+        {
+            StringBuilder command = new StringBuilder("getfield\t");
+            command.Append(KeePassEntryTitle);
+            command.Append('\t');
+            foreach (var name in FieldNames)
+            {
+                command.Append(name);
+                command.Append('\t');
+            }
+
+            SendCommand send = new SendCommand(command.ToString());
+
+            List<ApiGetFieldResponse> results = new List<ApiGetFieldResponse>();
+            foreach (var entry in send.Response.Entries)
+            {
+                switch (send.ResponseType)
+                {
+                    case SendCommand.ResponseLayoutType.default_2_column:
+                        int no = 1;
+                        foreach (ResponseItem item in entry)
+                        {
+                            switch (no)
+                            {
+                                case 1: //title
+                                    no++;
+                                    break;
+
+                                case 2: //name value
+                                    ApiGetFieldResponse result = new ApiGetFieldResponse();
+                                    result.Name = item.Parts[0];
+                                    result.Value = Encoding.UTF8.GetString(Convert.FromBase64String(item.Parts[1]));
+                                    results.Add(result);
+                                    break;
+                            }
+                        }
+                        break;
+                }
+            }
+
+            return results;
+        }
+
+        public static List<ApiGetAttachmentResponse> getattachment(string KeePassEntryTitle, string[] AttachmentNames)
+        {
+            StringBuilder command = new StringBuilder("getattachment\t");
+            command.Append(KeePassEntryTitle);
+            command.Append('\t');
+            foreach (var name in AttachmentNames)
+            {
+                command.Append(name);
+                command.Append('\t');
+            }
+
+            SendCommand send = new SendCommand(command.ToString());
+
+            List<ApiGetAttachmentResponse> results = new List<ApiGetAttachmentResponse>();
+            foreach (var entry in send.Response.Entries)
+            {
+                switch (send.ResponseType)
+                {
+                    case SendCommand.ResponseLayoutType.default_2_column:
+                        int no = 1;
+                        foreach (ResponseItem item in entry)
+                        {
+                            switch (no)
+                            {
+                                case 1: //title
+                                    no++;
+                                    break;
+
+                                case 2: //name value
+                                    ApiGetAttachmentResponse result = new ApiGetAttachmentResponse();
+                                    result.Name = item.Parts[0];
+                                    result.Value = Convert.FromBase64String(item.Parts[1]);
+                                    results.Add(result);
+                                    break;
+                            }
+                        }
+                        break;
+                }
+            }
+
+            return results;
+        }
     }
 }
