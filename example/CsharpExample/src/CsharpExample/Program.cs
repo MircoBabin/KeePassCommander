@@ -49,7 +49,9 @@ namespace CsharpExample
             string title = "Sample Entry";
             try
             {
-                entry = KeePassEntry.getfirst(title);
+                entry = KeePassEntry.getfirst(title, 
+                    new string[] { "extra field 1", "extra password 1" },
+                    new string[] { "example_attachment.txt" });
             }
             catch { }
             if (entry == null)
@@ -76,6 +78,19 @@ namespace CsharpExample
             Console.WriteLine("urlport   : " + entry.UrlPort);
             Console.WriteLine("urlpath   : " + entry.UrlPath);
             Console.WriteLine("notes     : " + entry.Notes);
+
+            foreach(var field in entry.Fields)
+            {
+                Console.WriteLine("field     : " + field.Name);
+                Console.WriteLine("     value: " + field.Value);
+            }
+
+            foreach (var attachment in entry.Attachments)
+            {
+                Console.WriteLine("attachment: " + attachment.Name);
+                Console.WriteLine("     value: " + attachment.Value);
+            }
+
             Environment.Exit(0);
         }
     }
