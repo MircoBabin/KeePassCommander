@@ -1,5 +1,16 @@
 # KeePassCommander changelog
 
+## Version 3.0
+Release date: 5 september 2022
+
+* breaking change: getfield now returns the value as UTF-8, base64 encoded. Because the value can contain newlines and/or tabs.
+* fix: getnote with multiple entrynames.
+* add: getfieldraw.
+* add: KeePassEntry.ps1 ability to also retrieve fields and attachments.
+* add: KeePassEntry.py ability to also retrieve fields and attachments.
+* add: KeePassEntry.cs ability to also retrieve fields and attachments.
+* add: KeePassCommandDll.dll ability to also retrieve fields and attachments.
+
 ## Version 2.8
 Release date: 2 september 2022
 

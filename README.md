@@ -23,7 +23,7 @@ The minimum .NET framework required is 4.0.
 Execute **KeePassCommand.exe** without parameters to view the help.
 
 ```
-KeePassCommand 2.8
+KeePassCommand 3.0
 https://github.com/MircoBabin/KeePassCommander - MIT license
 
 KeePass Commander is a plugin for the KeePass password store (https://keepass.info/).
@@ -39,11 +39,18 @@ Syntax: KeePassCommand.exe <command> {-out:outputfilename OR -out-utf8:outputfil
 * Basic get
 KeePassCommand.exe get "KeePass-entry-title" "KeePass-entry-title" ...
 e.g. KeePassCommand.exe get "Sample Entry"
-- "Notes" are outputted as UTF-8, base64 encoded.
+- "Note" is outputted as UTF-8, base64 encoded.
 
 * Advanced get string field
 KeePassCommand.exe getfield "KeePass-entry-title" "fieldname" "fieldname" ...
 e.g. KeePassCommand.exe getfield "Sample Entry" "extra field 1" "extra password 1"
+- "Value" is outputted as UTF-8, base64 encoded.
+
+* Advanced get string field raw into file
+KeePassCommand.exe getfieldraw <-out-utf8:outputfile or -out:> "KeePass-entry-title" "fieldname"
+e.g. KeePassCommand.exe getfieldraw -out-utf8:myfield.txt "Sample Entry" "extra field 1"
+- With -out-utf8, "Value" is outputted as UTF-8.
+- With -out, "Value" is outputted in ANSI codepage.
 
 * Advanced get file attachment
 KeePassCommand.exe getattachment "KeePass-entry-title" "attachmentname" "attachmentname" ...
@@ -55,16 +62,16 @@ KeePassCommand.exe getattachmentraw -out:outputfilename "KeePass-entry-title" "a
 e.g. KeePassCommand.exe getattachmentraw -out:myfile.txt "Sample Entry" "example_attachment.txt"
 - Attachment is saved in outputfilename, outputted as binary.
 
-* Advanced get notes
+* Advanced get note
 KeePassCommand.exe getnote "KeePass-entry-title" "KeePass-entry-title" ...
 e.g. KeePassCommand.exe getnote "Sample Entry"
-- "Notes" are outputted as UTF-8, base64 encoded.
+- "Note" is outputted as UTF-8, base64 encoded.
 
-* Advanced get notes into file
+* Advanced get note into file
 KeePassCommand.exe getnoteraw <-out-utf8:outputfile or -out:> "KeePass-entry-title"
 e.g. KeePassCommand.exe getnoteraw -out-utf8:mynote.txt "Sample Entry"
-- With -out-utf8, "Notes" are outputted as UTF-8.
-- With -out, "Notes" are outputted in ANSI codepage.
+- With -out-utf8, "Note" is outputted as UTF-8.
+- With -out, "Note" is outputted in ANSI codepage.
 
 ```
 

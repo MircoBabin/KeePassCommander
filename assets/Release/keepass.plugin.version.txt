@@ -1,3 +1,3 @@
 :
-KeePassCommander:2.8
+KeePassCommander:3.0
 :
