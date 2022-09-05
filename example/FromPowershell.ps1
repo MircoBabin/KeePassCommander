@@ -11,7 +11,12 @@ function ExitWithCode
 
 function Example
 {
-    $object = KeePassEntry -title "Sample Entry"
+    $options = [pscustomobject]@{
+        FieldNames = @('extra field 1', 'extra password 1')
+        AttachmentNames = @('example_attachment.txt')
+    }
+
+    $object = KeePassEntry -title "Sample Entry" -options $options
     if ($object -eq $null) {
         Write-Host "KeePass is not started"
         Write-Host "Has KeePassCommander.dll been copied to the directory containing KeePass.exe ?"
