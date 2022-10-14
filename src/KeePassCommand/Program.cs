@@ -94,6 +94,18 @@ namespace KeePassCommand
             sb.AppendLine("- With -out, \"Note\" is outputted in ANSI codepage.");
 
             sb.AppendLine();
+            sb.AppendLine("* Advanced list titles in group");
+            sb.AppendLine("KeePassCommand.exe listgroup <-out-utf8:outputfile or -out:> \"KeePass-entry-title\"");
+            sb.AppendLine("e.g. KeePassCommand.exe listgroup -out-utf8:titles.txt \"All Entries\"");
+            sb.AppendLine("- With -out-utf8, \"titles\" are outputted as UTF-8.");
+            sb.AppendLine("- With -out, \"titles\" are outputted in ANSI codepage.");
+            sb.AppendLine("- The queried entry note may contain the line \"KeePassCommanderListGroup=true\".");
+            sb.AppendLine("  This is not recursive, only titles in the current group are listed.");
+            sb.AppendLine("- The queried entry note may contain lines \"KeePassCommanderListAddItem={title}\".");
+            sb.AppendLine("- Output is one title per line, unique sorted on titlename.");
+            sb.AppendLine("- There is no SUCCESS or ERROR indication in the output.");
+
+            sb.AppendLine();
             sb.AppendLine("--- LICENSE ---");
             sb.AppendLine("KeePass Commander");
             sb.AppendLine("MIT license"); 
@@ -181,6 +193,10 @@ namespace KeePassCommand
                             {
                                 command.Append("getnote");
                             }
+                            else if (outcommand == "listgroup")
+                            {
+                                command.Append("listgroup");
+                            }
                             else
                             {
                                 throw new Exception("unknown command: " + outcommand);
@@ -260,6 +276,40 @@ namespace KeePassCommand
                     {
                         file.Write(notes.ToString());
                     }
+                    return;
+                }
+
+                if (outcommand == "listgroup")
+                {
+                    // No success or failure indication, just one title per line, each line terminated with NEWLINE.
+                    // On FAILURE the output will be empty (0 bytes).
+                    // Unique sorted on title.
+
+                    SortedDictionary<string, string> unique = new SortedDictionary<string, string>();
+                    foreach (List<ResponseItem> entry in send.Response.Entries)
+                    {
+                        string title = entry[0].Parts[0];
+                        if (!unique.ContainsKey(title))
+                            unique.Add(title, title);
+                    }
+
+                    foreach(string title in unique.Values)
+                    {
+                        output.AppendLine(title);
+                    }
+
+                    if (outfile.Length > 0)
+                    {
+                        using (StreamWriter file = new StreamWriter(outfile, false, outfile_encoding))
+                        {
+                            file.Write(output.ToString());
+                        }
+                    }
+                    else
+                    {
+                        Console.Write(output.ToString());
+                    }
+
                     return;
                 }
 

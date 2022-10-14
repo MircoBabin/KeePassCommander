@@ -146,7 +146,8 @@ namespace KeePassCommander
                         PipeTransmissionMode.Byte,
                         PipeOptions.None);
                     DebugOutputLine("Named Pipe Server started");
-                } catch (Exception ex)
+                }
+                catch (Exception ex)
                 {
                     DebugOutputLine("Starting Named Pipe Server failed" + Environment.NewLine + ex.ToString());
                     Stop = true;
@@ -239,6 +240,8 @@ namespace KeePassCommander
                         output = CommandGetAttachment(parms);
                     else if (parms[0] == "getnote")
                         output = CommandGetNote(parms);
+                    else if (parms[0] == "listgroup")
+                        output = CommandListGroup(parms);
                 }
 
                 writer.WriteLine(output);
@@ -360,6 +363,64 @@ namespace KeePassCommander
 
             DebugOutputLine("Ended FindTitles");
         }
+
+        private void FindTitle(string title, Dictionary<string, List<PwEntry>> found)
+        {
+            var titletofind = new Dictionary<string, List<PwEntry>>();
+            titletofind.Add(title, new List<PwEntry>());
+            FindTitles(titletofind);
+
+            List<PwEntry> foundEntries;
+            if (found.ContainsKey(title))
+            {
+                foundEntries = found[title];
+            }
+            else
+            {
+                foundEntries = new List<PwEntry>();
+                found.Add(title, foundEntries);
+            }
+
+            foundEntries.AddRange(titletofind[title]);
+        }
+
+        private void FindTitlesInGroup(PwEntry groupEntry, Dictionary<string, List<PwEntry>> found)
+        {
+            DebugOutputLine("Starting FindTitlesInGroup");
+            if (groupEntry == null)
+            {
+                DebugOutputLine("Ended FindTitlesInGroup, nothing to search");
+                return;
+            }
+
+            PwGroup group = groupEntry.ParentGroup;
+            if (group.Entries != null)
+            {
+                foreach (var entry in group.Entries)
+                {
+                    if (entry != groupEntry)
+                    {
+                        string title = GetEntryField(entry, PwDefs.TitleField);
+
+                        List<PwEntry> foundEntries;
+                        if (found.ContainsKey(title))
+                        {
+                            foundEntries = found[title];
+                        }
+                        else
+                        {
+                            foundEntries = new List<PwEntry>();
+                            found.Add(title, foundEntries);
+                        }
+
+                        foundEntries.Add(entry);
+                    }
+                }
+            }
+
+            DebugOutputLine("Ended FindTitlesInGroup");
+        }
+
 
         private string CommandGet(string[] parms)
         {
@@ -587,6 +648,80 @@ namespace KeePassCommander
             }
 
             DebugOutputLine("Ended command getnote");
+            return result.ToString();
+        }
+
+        private string CommandListGroup(string[] parms)
+        {
+            DebugOutputLine("Starting command listgroup");
+
+            StringBuilder result = new StringBuilder();
+            result.AppendLine(BeginOfResponse + "[listgroup][default-1-column]");
+
+            Dictionary<string, List<PwEntry>> titles = new Dictionary<string, List<PwEntry>>();
+            {
+                for (int i = 1; i < parms.Length; i++)
+                {
+                    string name = parms[i].Trim();
+                    if (!string.IsNullOrEmpty(name))
+                    {
+                        titles.Add(name, new List<PwEntry>());
+                    }
+                }
+
+                FindTitles(titles);
+            }
+
+            Dictionary<string, List<PwEntry>> found = new Dictionary<string, List<PwEntry>>();
+            {
+                foreach (var keypair in titles)
+                {
+                    foreach (PwEntry entry in keypair.Value)
+                    {
+                        var notes = GetEntryField(entry, PwDefs.NotesField);
+                        //KeePassCommanderListGroup=true
+                        //KeePassCommanderListAddItem={title}
+                        foreach (var line in notes.Split('\n'))
+                        {
+                            var command = line.Trim();
+                            string value;
+                            string search;
+
+                            search = "KeePassCommanderListGroup=";
+                            if (command.StartsWith(search))
+                            {
+                                value = command.Substring(search.Length);
+                                if (value.Trim() == "true")
+                                    FindTitlesInGroup(entry, found);
+                            }
+                            else
+                            {
+                                search = "KeePassCommanderListAddItem=";
+                                if (command.StartsWith(search))
+                                {
+                                    value = command.Substring(search.Length);
+
+                                    FindTitle(value, found);
+                                }
+                            }
+                        }
+                    }
+                }
+
+                {
+                    foreach (var keypair in found)
+                    {
+                        foreach (PwEntry entry in keypair.Value)
+                        {
+                            result.Append(GetEntryField(entry, PwDefs.TitleField));
+                            result.Append("\t");
+                            result.AppendLine();
+                        }
+                    }
+                }
+            }
+
+            DebugOutputLine("Ended command listgroup");
             return result.ToString();
         }
     }

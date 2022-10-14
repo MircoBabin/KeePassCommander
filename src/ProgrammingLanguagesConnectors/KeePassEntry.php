@@ -48,6 +48,37 @@ class KeePassEntry
     public $fields;
     
     public $attachments;
+
+    public static function ListGroup($entryname, $options = null)
+    {
+        $KeePassCommandExe = null;
+        if (is_array($options)) {
+            if (isset($options['KeePassCommandExe']) && is_string($options['KeePassCommandExe'])) {
+                $KeePassCommandExe = $options['KeePassCommandExe'];
+            }
+        }
+
+        if ($KeePassCommandExe === null) {
+            $KeePassCommandExe = __DIR__ . '/KeePassCommand.exe';
+        }
+        $KeePassCommandExe = str_replace('/', '\\', $KeePassCommandExe);
+        if (!file_exists($KeePassCommandExe)) {
+            throw new \Exception('KeePassCommand.exe not found: ' . $KeePassCommandExe);
+        }
+        $KeePassCommandExe = '"'.$KeePassCommandExe.'"';
+
+        $KeePassCommandExe .= ' listgroup ' . escapeshellarg($entryname);
+        $output = shell_exec($KeePassCommandExe);
+
+        $titles = array();
+        foreach(explode("\n", $output) as $title) {
+            if (trim($title) !== '') {
+                $titles[] = $title;
+            }
+        }
+
+        return $titles;
+    }
     
     /* 
     options = (null | array with each key optional) [ 

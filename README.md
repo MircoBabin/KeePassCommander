@@ -23,7 +23,7 @@ The minimum .NET framework required is 4.0.
 Execute **KeePassCommand.exe** without parameters to view the help.
 
 ```
-KeePassCommand 3.0
+KeePassCommand 3.1
 https://github.com/MircoBabin/KeePassCommander - MIT license
 
 KeePass Commander is a plugin for the KeePass password store (https://keepass.info/).
@@ -72,6 +72,17 @@ KeePassCommand.exe getnoteraw <-out-utf8:outputfile or -out:> "KeePass-entry-tit
 e.g. KeePassCommand.exe getnoteraw -out-utf8:mynote.txt "Sample Entry"
 - With -out-utf8, "Note" is outputted as UTF-8.
 - With -out, "Note" is outputted in ANSI codepage.
+
+* Advanced list titles in group
+KeePassCommand.exe listgroup <-out-utf8:outputfile or -out:> "KeePass-entry-title"
+e.g. KeePassCommand.exe listgroup -out-utf8:titles.txt "All Entries"
+- With -out-utf8, "titles" are outputted as UTF-8.
+- With -out, "titles" are outputted in ANSI codepage.
+- The queried entry note may contain the line "KeePassCommanderListGroup=true".
+  This is not recursive, only titles in the current group are listed.
+- The queried entry note may contain lines "KeePassCommanderListAddItem={title}".
+- Output is one title per line, unique sorted on titlename.
+- There is no SUCCESS or ERROR indication in the output.
 
 ```
 

@@ -1,5 +1,11 @@
 # KeePassCommander changelog
 
+## Version 3.1
+Release date: 14 october 2022
+
+* add: listgroup.
+* add: KeePassEntry.php function KeePassEntry::ListGroup()
+
 ## Version 3.0
 Release date: 5 september 2022
 
