@@ -5,6 +5,7 @@
     rem Expect the same output as Test.ProgrammingLanguage.Powershell.bat
     set "KeePassCommand_TestExpected=%~dp0Expectations\Test.ProgrammingLanguage.Powershell.bat.expected"
     
+    chcp 65001 > nul 2>&1
     powershell -NoProfile -ExecutionPolicy Bypass -file "%~dp0Test.ProgrammingLanguage.PowershellUsingDll.ps1" "%KeePassCommandExe%" > "%KeePassCommand_TestOutput%"
     
     call "%~dp0Utils\Utils.diff.bat"

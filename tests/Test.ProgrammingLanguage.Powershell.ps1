@@ -15,4 +15,4 @@ $options = [pscustomobject]@{
 
 $object = KeePassEntry -title "Sample Entry" -options $options
     
-$object | ConvertTo-Json -Compress | Out-String | Write-Host
+$object | ConvertTo-Json -Compress | Out-String | % Trim | Write-Host
