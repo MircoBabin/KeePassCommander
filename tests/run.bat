@@ -7,6 +7,7 @@ set "totalStartTime=%time: =0%"
     if "%~1" == "" goto all
 
 :commandline    
+    cls
     call :getargc TOTAL %*
 :commandlineNext
     call :runtest %1
@@ -21,6 +22,7 @@ set "totalStartTime=%time: =0%"
     goto :eof
     
 :all_yes    
+    cls
     for %%a in ("%~dp0Test.*.bat") do set /A TOTAL=TOTAL+1
     for %%a in ("%~dp0Test.*.bat") do call :runtest "%%a"
     goto end
