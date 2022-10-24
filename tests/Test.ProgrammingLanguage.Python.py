@@ -1,6 +1,10 @@
 import inspect, os.path
 import sys
-import imp
+if sys.version_info >= (3, 0):
+  from importlib.machinery import SourceFileLoader
+else:
+  import imp
+import binascii
 import json
 
 if (len(sys.argv) < 2):
@@ -14,7 +18,12 @@ module_path     = os.path.dirname(os.path.abspath(module_filename))
 KeePassEntry_py = os.path.join(module_path, "..\\src\ProgrammingLanguagesConnectors\\KeePassEntry.py")
 
 # load KeePassEntry.py containing function KeePassEntry
-KeePassEntryModule = imp.load_source('KeePassEntryModule', KeePassEntry_py)
+# python 3 deprecated imp.load_source
+KeePassEntryModule = None
+if sys.version_info >= (3, 0):
+  KeePassEntryModule = SourceFileLoader('KeePassEntryModule', KeePassEntry_py).load_module()  
+else:
+  KeePassEntryModule = imp.load_source('KeePassEntryModule', KeePassEntry_py)
 
 # BEGIN example
 options = dict()
@@ -24,4 +33,10 @@ options['AttachmentNames'] = ['example_attachment.txt']
 
 entry = KeePassEntryModule.KeePassEntry('Sample Entry', options)
 
-print json.dumps(entry, sort_keys=True);
+class JsonBytesEncoder(json.JSONEncoder):
+  def default(self, obj):
+    if isinstance(obj, bytes):
+      return binascii.hexlify(obj, ' ').decode('utf-8')
+    return json.JSONEncoder.default(self, obj)
+
+print(json.dumps(entry, sort_keys=True, separators=(',', ':'), cls=JsonBytesEncoder));
