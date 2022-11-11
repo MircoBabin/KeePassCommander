@@ -42,8 +42,18 @@
     <Compile Include="..\GlobalAssemblyInfo.cs">
       <Link>Properties\GlobalAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="Command\Runner.cs" />
+    <Compile Include="Command\CommandGetAttachment.cs" />
+    <Compile Include="Command\CommandListGroup.cs" />
+    <Compile Include="Command\CommandGetNote.cs" />
+    <Compile Include="Command\CommandGetField.cs" />
+    <Compile Include="Command\CommandGet.cs" />
+    <Compile Include="Command\ICommand.cs" />
     <Compile Include="DebugLog.cs" />
+    <Compile Include="Command\EntriesHelper.cs" />
     <Compile Include="KeePassCommanderExt.cs" />
+    <Compile Include="NamedPipeServer\NamedPipeServer.cs" />
+    <Compile Include="NamedPipeServer\NamedPipeServerConnection.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
