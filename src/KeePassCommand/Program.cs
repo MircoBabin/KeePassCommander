@@ -1,8 +1,10 @@
 ﻿using KeePassCommandDll.Communication;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Text;
+using System.Xml.Serialization;
 
 namespace KeePassCommand
 {
@@ -108,7 +110,7 @@ namespace KeePassCommand
             sb.AppendLine();
             sb.AppendLine("--- LICENSE ---");
             sb.AppendLine("KeePass Commander");
-            sb.AppendLine("MIT license"); 
+            sb.AppendLine("MIT license");
             sb.AppendLine();
             sb.AppendLine("Copyright (c) 2018 Mirco Babin");
             sb.AppendLine();
@@ -137,14 +139,96 @@ namespace KeePassCommand
             Console.Write(sb.ToString());
         }
 
+        /*
+        KeePassCommand.config.xml
+
+        <?xml version="1.0" encoding="utf-8"?>
+        <Configuration>
+            <filesystem>s:\incoming\KeePass</filesystem>
+        </Configuration>
+        */
+        private class Configuration
+        {
+            public string filesystem { get; set; }
+        }
+
+        static ProgramArguments ParseArguments(string[] args)
+        {
+            var result = new ProgramArguments();
+
+            foreach (var arg in args)
+            {
+                if (arg.Length > 5 && arg.Substring(0, 5).ToLower() == "-out:")
+                {
+                    result.outfile = arg.Substring(5);
+                    result.outfile_encoding = Encoding.Default; //ANSI encoding on the computer executing this executable
+                }
+                else if (arg.Length > 10 && arg.Substring(0, 10).ToLower() == "-out-utf8:")
+                {
+                    result.outfile = arg.Substring(10);
+                    result.outfile_encoding = Encoding.UTF8;
+                }
+                else if (arg.Length > 12 && arg.Substring(0, 12).ToLower() == "-filesystem:")
+                {
+                    var filesystem = arg.Substring(12);
+                    if (Directory.Exists(filesystem))
+                    {
+                        result.filesystem = filesystem;
+                    }
+                }
+                else if (arg.Length > 10 && arg.Substring(0, 10).ToLower() == "-namedpipe")
+                {
+                    result.namedpipe = true;
+                }
+                else
+                {
+                    if (String.IsNullOrEmpty(result.outcommand))
+                    {
+                        result.outcommand = arg;
+                    }
+                    else
+                    {
+                        result.outargs.Add(arg);
+                    }
+                }
+            }
+
+            if (!String.IsNullOrWhiteSpace(result.filesystem) && result.namedpipe)
+                throw new Exception("Both commandline arguments -namedpipe and -filesystem: are specified. Only specify one of them.");
+
+            if (String.IsNullOrWhiteSpace(result.filesystem) && !result.namedpipe)
+            {
+                try
+                {
+                    string xmlfilename;
+                    {
+                        Process me = Process.GetCurrentProcess();
+                        string executableFileName = me.Modules[0].FileName;
+                        string programPath = Path.GetFullPath(Path.GetDirectoryName(executableFileName));
+
+                        xmlfilename = Path.Combine(programPath, "KeePassCommand.config.xml");
+                    }
+
+                    Configuration config;
+                    using (var reader = new StreamReader(xmlfilename))
+                    {
+                        config = (Configuration)new XmlSerializer(typeof(Configuration)).Deserialize(reader);
+                    }
+
+                    if (!String.IsNullOrWhiteSpace(config.filesystem) && Directory.Exists(config.filesystem))
+                        result.filesystem = config.filesystem;
+                }
+                catch { }
+
+                if (String.IsNullOrWhiteSpace(result.filesystem) && !result.namedpipe)
+                    result.namedpipe = true; // if both -namedpipe and -filesystem: are omitted then use the default setting of namedpipe
+            }
+
+            return result;
+        }
+
         static void Main(string[] args)
         {
-            StringBuilder output = new StringBuilder();
-            string outfile = String.Empty;
-            Encoding outfile_encoding = null;
-            string outcommand = String.Empty;
-            string filesystem = String.Empty;
-
             try
             {
                 if (args.Length == 0)
@@ -160,223 +244,22 @@ namespace KeePassCommand
                     return;
                 }
 
-                StringBuilder command = new StringBuilder();
-                foreach (var arg in args)
-                {
-                    if (arg.Length > 5 && arg.Substring(0, 5).ToLower() == "-out:")
-                    {
-                        outfile = arg.Substring(5);
-                        outfile_encoding = Encoding.Default; //ANSI encoding on the computer executing this executable
-                    }
-                    else if (arg.Length > 10 && arg.Substring(0, 10).ToLower() == "-out-utf8:")
-                    {
-                        outfile = arg.Substring(10);
-                        outfile_encoding = Encoding.UTF8;
-                    }
-                    else if (arg.Length > 12 && arg.Substring(0, 12).ToLower() == "-filesystem:")
-                    {
-                        filesystem = arg.Substring(12);
-                    }
-                    else
-                    {
-                        if (String.IsNullOrEmpty(outcommand))
-                        {
-                            outcommand = arg;
-                            if (outcommand == "get")
-                            {
-                                command.Append("get");
-                            }
-                            else if (outcommand == "getfield" || outcommand == "getfieldraw")
-                            {
-                                command.Append("getfield");
-                            }
-                            else if (outcommand == "getattachment" || outcommand == "getattachmentraw")
-                            {
-                                command.Append("getattachment");
-                            }
-                            else if (outcommand == "getnote" || outcommand == "getnoteraw")
-                            {
-                                command.Append("getnote");
-                            }
-                            else if (outcommand == "listgroup")
-                            {
-                                command.Append("listgroup");
-                            }
-                            else
-                            {
-                                throw new Exception("unknown command: " + outcommand);
-                            }
-                        }
-                        else
-                        {
-                            command.Append(arg);
-                        }
+                ProgramArguments options = ParseArguments(args);
+                if (String.IsNullOrWhiteSpace(options.outcommand))
+                    throw new Exception("no command specified");
 
-                        command.Append('\t');
-                    }
+
+                if (!String.IsNullOrWhiteSpace(options.outfile) && File.Exists(options.outfile))
+                {
+                    File.Delete(options.outfile);
                 }
 
-                ISendCommand send;
-                if (!String.IsNullOrWhiteSpace(filesystem) && Directory.Exists(filesystem))
-                    send = new SendCommandViaFileSystem(filesystem, command.ToString());
-                else
-                    send = new SendCommandViaNamedPipe(command.ToString());
-
-                if (outcommand == "getfieldraw")
-                {
-                    if (outfile.Length == 0)
-                        throw new Exception("getfieldraw must be used in combination with -out: or -out-utf8:");
-
-                    if (send.Response.ResponseType != Response.ResponseLayoutType.default_2_column)
-                        throw new Exception("getfieldraw response type should be default_2_column, but is: " + send.Response.ResponseType.ToString());
-
-                    if (send.Response.Entries.Count != 1)
-                        throw new Exception("getfieldraw must query exactly one entry");
-
-                    List<ResponseItem> entry = send.Response.Entries[0];
-                    if (entry.Count != 2 || entry[0].Parts[0] != "title")
-                        throw new Exception("getfieldraw must query exactly one entry");
-
-                    string fieldvalue = Encoding.UTF8.GetString(Convert.FromBase64String(entry[1].Parts[1]));
-                    using (StreamWriter file = new StreamWriter(outfile, false, outfile_encoding))
-                    {
-                        file.Write(fieldvalue.ToString());
-                    }
-                    return;
-                }
-
-                if (outcommand == "getattachmentraw")
-                {
-                    if (outfile.Length == 0)
-                        throw new Exception("getattachmentraw must be used in combination with -out: or -out-utf8: (will always be saved binary)");
-
-                    if (send.Response.ResponseType != Response.ResponseLayoutType.default_2_column)
-                        throw new Exception("getattachmentraw response type should be default_2_column, but is: " + send.Response.ResponseType.ToString());
-
-                    if (send.Response.Entries.Count != 1)
-                        throw new Exception("getattachmentraw must query exactly one entry");
-
-                    List<ResponseItem> entry = send.Response.Entries[0];
-                    if (entry.Count != 2 || entry[0].Parts[0] != "title")
-                        throw new Exception("getattachmentraw must query exactly one entry");
-
-                    byte[] attachment = Convert.FromBase64String(entry[1].Parts[1]);
-                    File.WriteAllBytes(outfile, attachment);
-                    return;
-                }
-
-                if (outcommand == "getnoteraw")
-                {
-                    if (outfile.Length == 0)
-                        throw new Exception("getnoteraw must be used in combination with -out: or -out-utf8:");
-
-                    if (send.Response.ResponseType != Response.ResponseLayoutType.default_1_column)
-                        throw new Exception("getnoteraw response type should be default_1_column, but is: " + send.Response.ResponseType.ToString());
-
-                    if (send.Response.Entries.Count != 1)
-                        throw new Exception("getnoteraw must query exactly one entry");
-
-                    List<ResponseItem> entry = send.Response.Entries[0];
-                    if (entry.Count != 2)
-                        throw new Exception("getnoteraw must query exactly one entry");
-
-                    string notes = Encoding.UTF8.GetString(Convert.FromBase64String(entry[1].Parts[0]));
-                    using (StreamWriter file = new StreamWriter(outfile, false, outfile_encoding))
-                    {
-                        file.Write(notes.ToString());
-                    }
-                    return;
-                }
-
-                if (outcommand == "listgroup")
-                {
-                    // No success or failure indication, just one title per line, each line terminated with NEWLINE.
-                    // On FAILURE the output will be empty (0 bytes).
-                    // Unique sorted on title.
-
-                    SortedDictionary<string, string> unique = new SortedDictionary<string, string>();
-                    foreach (List<ResponseItem> entry in send.Response.Entries)
-                    {
-                        string title = entry[0].Parts[0];
-                        if (!unique.ContainsKey(title))
-                            unique.Add(title, title);
-                    }
-
-                    foreach(string title in unique.Values)
-                    {
-                        output.AppendLine(title);
-                    }
-
-                    if (outfile.Length > 0)
-                    {
-                        using (StreamWriter file = new StreamWriter(outfile, false, outfile_encoding))
-                        {
-                            file.Write(output.ToString());
-                        }
-                    }
-                    else
-                    {
-                        Console.Write(output.ToString());
-                    }
-
-                    return;
-                }
-
-                switch (send.Response.ResponseType)
-                {
-                    case Response.ResponseLayoutType.default_1_column:
-                    case Response.ResponseLayoutType.default_2_column:
-                        output.AppendLine("SUCCESS");
-                        break;
-
-                    default:
-                        throw new Exception("Unknown response layout: " + send.Response.ResponseType.ToString());
-                }
-
-                foreach (List<ResponseItem> entry in send.Response.Entries)
-                {
-                    switch(send.Response.ResponseType)
-                    {
-                        case Response.ResponseLayoutType.default_1_column:
-                            output.AppendLine("B\t");
-                            foreach (ResponseItem item in entry)
-                            {
-                                output.AppendLine("I\t" + item.Parts[0]);
-                            }
-                            output.AppendLine("E\t");
-                            break;
-
-                        case Response.ResponseLayoutType.default_2_column:
-                            output.AppendLine("B\t");
-                            foreach (ResponseItem item in entry)
-                            {
-                                output.AppendLine("I\t" + item.Parts[0] + "\t" + item.Parts[1]);
-                            }
-                            output.AppendLine("E\t");
-                            break;
-
-                        default:
-                            throw new Exception("Unknown response layout: " + send.Response.ResponseType.ToString());
-                    }
-                }
+                var runner = new Command.Runner();
+                runner.Run(options);
             }
             catch (Exception ex)
             {
-                output.Length = 0;
-                output.AppendLine("ERROR");
-                output.AppendLine(ex.Message);
-            }
-
-            if (outfile.Length > 0)
-            {
-                using (StreamWriter file = new StreamWriter(outfile, false, outfile_encoding))
-                {
-                    file.Write(output.ToString());
-                }
-            }
-            else
-            {
-                Console.WriteLine(output.ToString());
+                Console.Error.WriteLine(ex.Message);
             }
         }
     }

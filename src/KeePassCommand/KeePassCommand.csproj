@@ -35,12 +35,21 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.XML" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\GlobalAssemblyInfo.cs">
       <Link>Properties\GlobalAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="Command\CommandCommon.cs" />
+    <Compile Include="Command\CommandGetAttachmentRaw.cs" />
+    <Compile Include="Command\CommandGetFieldRaw.cs" />
+    <Compile Include="Command\CommandGetNoteRaw.cs" />
+    <Compile Include="Command\CommandListGroup.cs" />
+    <Compile Include="Command\ICommand.cs" />
+    <Compile Include="Command\Runner.cs" />
     <Compile Include="Program.cs" />
+    <Compile Include="ProgramArguments.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
