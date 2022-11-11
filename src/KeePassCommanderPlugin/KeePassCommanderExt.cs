@@ -21,7 +21,7 @@ namespace KeePassCommander
 
         private string ServerPipeName;
 
-        private TextWriter Logger = null;
+        private readonly DebugLog Debug = new DebugLog();
 
         public override bool Initialize(IPluginHost host)
         {
@@ -32,7 +32,15 @@ namespace KeePassCommander
 
             //KeePass.exe --debug --KeePassCommanderDebug=c:\incoming\KeePassCommander.log
             string debugFileName = host.CommandLineArgs["KeePassCommanderDebug"];
-            DebugInitialize(debugFileName);
+            try
+            { 
+                Debug.Initialize(debugFileName);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("KeePassCommander debug logger failed to initialise. No logging will be performed until KeePass is restarted with a valid debug log file location. Reason: " + ex.ToString());
+            }
+
 
             StartServer();
             return true;
@@ -44,33 +52,6 @@ namespace KeePassCommander
 
             StopServer();
             KeePassHost = null;
-        }
-
-        private void DebugInitialize(string debugFilename)
-        {
-            if (String.IsNullOrEmpty(debugFilename)) return;
-
-            try
-            {
-                Logger = new StreamWriter(debugFilename);
-                ((StreamWriter)Logger).AutoFlush = true;
-
-                DebugOutputLine("Debug initialized");
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("KeePassCommander debug logger failed to initialise. No logging will be performed until KeePass is restarted with a valid debug log file location. Reason: " + ex.ToString());
-            }
-        }
-
-        private void DebugOutputLine(string message)
-        {
-            if (Logger == null) return;
-
-            lock (Logger)
-            {
-                Logger.WriteLine("[" + DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + "][" + Thread.CurrentThread.ManagedThreadId + "] " + message);
-            }
         }
 
         private void StartServer()
@@ -125,7 +106,7 @@ namespace KeePassCommander
         {
             if (Stop)
             {
-                DebugOutputLine("Not starting Named Pipe Server, Stop=true (1)");
+                Debug.OutputLine("Not starting Named Pipe Server, Stop=true (1)");
                 return;
             }
 
@@ -133,23 +114,23 @@ namespace KeePassCommander
             {
                 if (Stop)
                 {
-                    DebugOutputLine("Not starting Named Pipe Server, Stop=true (2)");
+                    Debug.OutputLine("Not starting Named Pipe Server, Stop=true (2)");
                     return;
                 }
 
                 try
                 {
-                    DebugOutputLine("Starting Named Pipe Server on \"" + ServerPipeName + "\"");
+                    Debug.OutputLine("Starting Named Pipe Server on \"" + ServerPipeName + "\"");
                     ServerPipe = new NamedPipeServerStream(ServerPipeName,
                         PipeDirection.InOut,
                         10,
                         PipeTransmissionMode.Byte,
                         PipeOptions.None);
-                    DebugOutputLine("Named Pipe Server started");
+                    Debug.OutputLine("Named Pipe Server started");
                 }
                 catch (Exception ex)
                 {
-                    DebugOutputLine("Starting Named Pipe Server failed" + Environment.NewLine + ex.ToString());
+                    Debug.OutputLine("Starting Named Pipe Server failed" + Environment.NewLine + ex.ToString());
                     Stop = true;
                     return;
                 }
@@ -157,13 +138,13 @@ namespace KeePassCommander
 
             try
             {
-                DebugOutputLine("Waiting for connection");
+                Debug.OutputLine("Waiting for connection");
                 ServerPipe.WaitForConnection();
-                DebugOutputLine("Connection received");
+                Debug.OutputLine("Connection received");
 
                 if (Stop)
                 {
-                    DebugOutputLine("Ending connection, Stop=true (3)");
+                    Debug.OutputLine("Ending connection, Stop=true (3)");
                     ServerPipe.Dispose();
                     ServerPipe = null;
                     return;
@@ -174,7 +155,7 @@ namespace KeePassCommander
                 {
                     if (Stop)
                     {
-                        DebugOutputLine("Ending connection, Stop=true (4)");
+                        Debug.OutputLine("Ending connection, Stop=true (4)");
                         ServerPipe.Dispose();
                         ServerPipe = null;
                         return;
@@ -184,17 +165,17 @@ namespace KeePassCommander
                     ServerClients.Add(client);
                 }
 
-                DebugOutputLine("Restart listening on named pipe");
+                Debug.OutputLine("Restart listening on named pipe");
                 ServerPipe = null;
                 StartServer();
 
-                DebugOutputLine("Starting run client");
+                Debug.OutputLine("Starting run client");
                 RunClient(client);
-                DebugOutputLine("Ended run client");
+                Debug.OutputLine("Ended run client");
             }
             catch (Exception ex)
             {
-                DebugOutputLine("RunServer Exception:" + Environment.NewLine + ex.ToString());
+                Debug.OutputLine("RunServer Exception:" + Environment.NewLine + ex.ToString());
             }
         }
 
@@ -219,7 +200,7 @@ namespace KeePassCommander
                 string command = reader.ReadLine();
                 string[] parms = command.Split('\t');
 
-                if (Logger != null)
+                if (Debug.Enabled)
                 {
                     StringBuilder sb = new StringBuilder();
                     sb.AppendLine("Received parameters:");
@@ -227,7 +208,7 @@ namespace KeePassCommander
                     {
                         sb.AppendLine(parm);
                     }
-                    DebugOutputLine(sb.ToString());
+                    Debug.OutputLine(sb.ToString());
                 }
 
                 if (parms.Length > 0)
@@ -254,7 +235,7 @@ namespace KeePassCommander
             }
             catch (Exception ex)
             {
-                DebugOutputLine("RunClient Exception:" + Environment.NewLine + ex.ToString());
+                Debug.OutputLine("RunClient Exception:" + Environment.NewLine + ex.ToString());
             }
 
             if (Stop) return;
@@ -329,10 +310,10 @@ namespace KeePassCommander
 
         private void FindTitles(Dictionary<string, List<PwEntry>> search)
         {
-            DebugOutputLine("Starting FindTitles");
+            Debug.OutputLine("Starting FindTitles");
             if (search.Count == 0)
             {
-                DebugOutputLine("Ended FindTitles, nothing to search");
+                Debug.OutputLine("Ended FindTitles, nothing to search");
                 return;
             }
 
@@ -342,7 +323,7 @@ namespace KeePassCommander
 
                 if (db.IsOpen)
                 {
-                    DebugOutputLine("    Database: " + db.Name);
+                    Debug.OutputLine("    Database: " + db.Name);
 
                     var items = db.RootGroup.GetObjects(true, true);
                     foreach (var item in items)
@@ -361,7 +342,7 @@ namespace KeePassCommander
                 }
             }
 
-            DebugOutputLine("Ended FindTitles");
+            Debug.OutputLine("Ended FindTitles");
         }
 
         private void FindTitle(string title, Dictionary<string, List<PwEntry>> found)
@@ -386,10 +367,10 @@ namespace KeePassCommander
 
         private void FindTitlesInGroup(PwEntry groupEntry, Dictionary<string, List<PwEntry>> found)
         {
-            DebugOutputLine("Starting FindTitlesInGroup");
+            Debug.OutputLine("Starting FindTitlesInGroup");
             if (groupEntry == null)
             {
-                DebugOutputLine("Ended FindTitlesInGroup, nothing to search");
+                Debug.OutputLine("Ended FindTitlesInGroup, nothing to search");
                 return;
             }
 
@@ -418,13 +399,13 @@ namespace KeePassCommander
                 }
             }
 
-            DebugOutputLine("Ended FindTitlesInGroup");
+            Debug.OutputLine("Ended FindTitlesInGroup");
         }
 
 
         private string CommandGet(string[] parms)
         {
-            DebugOutputLine("Starting command get");
+            Debug.OutputLine("Starting command get");
 
             StringBuilder result = new StringBuilder();
             result.AppendLine(BeginOfResponse + "[get][default-1-column]");
@@ -444,10 +425,10 @@ namespace KeePassCommander
 
             foreach (var keypair in titles)
             {
-                DebugOutputLine("Found entries for title: " + keypair.Key);
+                Debug.OutputLine("Found entries for title: " + keypair.Key);
                 foreach (PwEntry entry in keypair.Value)
                 {
-                    DebugOutputLine("    Entry: " + entry.Strings.ReadSafe(PwDefs.TitleField));
+                    Debug.OutputLine("    Entry: " + entry.Strings.ReadSafe(PwDefs.TitleField));
                     try
                     {
                         string url = GetEntryField(entry, PwDefs.UrlField);
@@ -481,18 +462,18 @@ namespace KeePassCommander
                     }
                     catch (Exception ex)
                     {
-                        DebugOutputLine("CommandGet Exception:" + Environment.NewLine + ex.ToString());
+                        Debug.OutputLine("CommandGet Exception:" + Environment.NewLine + ex.ToString());
                     }
                 }
             }
 
-            DebugOutputLine("Ended command get");
+            Debug.OutputLine("Ended command get");
             return result.ToString();
         }
 
         private string CommandGetField(string[] parms)
         {
-            DebugOutputLine("Starting command getfield");
+            Debug.OutputLine("Starting command getfield");
 
             StringBuilder result = new StringBuilder();
             result.AppendLine(BeginOfResponse + "[getfield][default-2-column]");
@@ -546,13 +527,13 @@ namespace KeePassCommander
                 }
             }
 
-            DebugOutputLine("Ended command getfield");
+            Debug.OutputLine("Ended command getfield");
             return result.ToString();
         }
 
         private string CommandGetAttachment(string[] parms)
         {
-            DebugOutputLine("Starting command getattachment");
+            Debug.OutputLine("Starting command getattachment");
 
             StringBuilder result = new StringBuilder();
             result.AppendLine(BeginOfResponse + "[getattachment][default-2-column]");
@@ -606,13 +587,13 @@ namespace KeePassCommander
                 }
             }
 
-            DebugOutputLine("Ended command getattachment");
+            Debug.OutputLine("Ended command getattachment");
             return result.ToString();
         }
 
         private string CommandGetNote(string[] parms)
         {
-            DebugOutputLine("Starting command getnote");
+            Debug.OutputLine("Starting command getnote");
 
             StringBuilder result = new StringBuilder();
             result.AppendLine(BeginOfResponse + "[getnote][default-1-column]");
@@ -647,13 +628,13 @@ namespace KeePassCommander
                 }
             }
 
-            DebugOutputLine("Ended command getnote");
+            Debug.OutputLine("Ended command getnote");
             return result.ToString();
         }
 
         private string CommandListGroup(string[] parms)
         {
-            DebugOutputLine("Starting command listgroup");
+            Debug.OutputLine("Starting command listgroup");
 
             StringBuilder result = new StringBuilder();
             result.AppendLine(BeginOfResponse + "[listgroup][default-1-column]");
@@ -721,7 +702,7 @@ namespace KeePassCommander
                 }
             }
 
-            DebugOutputLine("Ended command listgroup");
+            Debug.OutputLine("Ended command listgroup");
             return result.ToString();
         }
     }
