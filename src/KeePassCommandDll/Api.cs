@@ -29,15 +29,15 @@ namespace KeePassCommandDll
                 command.Append('\t');
             }
 
-            SendCommand send = new SendCommand(command.ToString());
+            SendCommandViaNamedPipe send = new SendCommandViaNamedPipe(command.ToString());
 
             List<ApiGetResponse> results = new List<ApiGetResponse>();
             foreach (var entry in send.Response.Entries)
             {
                 ApiGetResponse result = null;
-                switch (send.ResponseType)
+                switch (send.Response.ResponseType)
                 {
-                    case SendCommand.ResponseLayoutType.default_1_column:
+                    case Response.ResponseLayoutType.default_1_column:
                         result = new ApiGetResponse();
                         int no = 0;
                         foreach (ResponseItem item in entry)
@@ -94,14 +94,14 @@ namespace KeePassCommandDll
                 command.Append('\t');
             }
 
-            SendCommand send = new SendCommand(command.ToString());
+            SendCommandViaNamedPipe send = new SendCommandViaNamedPipe(command.ToString());
 
             List<ApiGetFieldResponse> results = new List<ApiGetFieldResponse>();
             foreach (var entry in send.Response.Entries)
             {
-                switch (send.ResponseType)
+                switch (send.Response.ResponseType)
                 {
-                    case SendCommand.ResponseLayoutType.default_2_column:
+                    case Response.ResponseLayoutType.default_2_column:
                         int no = 1;
                         foreach (ResponseItem item in entry)
                         {
@@ -137,14 +137,14 @@ namespace KeePassCommandDll
                 command.Append('\t');
             }
 
-            SendCommand send = new SendCommand(command.ToString());
+            SendCommandViaNamedPipe send = new SendCommandViaNamedPipe(command.ToString());
 
             List<ApiGetAttachmentResponse> results = new List<ApiGetAttachmentResponse>();
             foreach (var entry in send.Response.Entries)
             {
-                switch (send.ResponseType)
+                switch (send.Response.ResponseType)
                 {
-                    case SendCommand.ResponseLayoutType.default_2_column:
+                    case Response.ResponseLayoutType.default_2_column:
                         int no = 1;
                         foreach (ResponseItem item in entry)
                         {

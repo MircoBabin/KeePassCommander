@@ -143,6 +143,7 @@ namespace KeePassCommand
             string outfile = String.Empty;
             Encoding outfile_encoding = null;
             string outcommand = String.Empty;
+            string filesystem = String.Empty;
 
             try
             {
@@ -171,6 +172,10 @@ namespace KeePassCommand
                     {
                         outfile = arg.Substring(10);
                         outfile_encoding = Encoding.UTF8;
+                    }
+                    else if (arg.Length > 12 && arg.Substring(0, 12).ToLower() == "-filesystem:")
+                    {
+                        filesystem = arg.Substring(12);
                     }
                     else
                     {
@@ -211,15 +216,19 @@ namespace KeePassCommand
                     }
                 }
 
-                SendCommand send = new SendCommand(command.ToString());
+                ISendCommand send;
+                if (!String.IsNullOrWhiteSpace(filesystem) && Directory.Exists(filesystem))
+                    send = new SendCommandViaFileSystem(filesystem, command.ToString());
+                else
+                    send = new SendCommandViaNamedPipe(command.ToString());
 
                 if (outcommand == "getfieldraw")
                 {
                     if (outfile.Length == 0)
                         throw new Exception("getfieldraw must be used in combination with -out: or -out-utf8:");
 
-                    if (send.ResponseType != SendCommand.ResponseLayoutType.default_2_column)
-                        throw new Exception("getfieldraw response type should be default_2_column, but is: " + send.ResponseType.ToString());
+                    if (send.Response.ResponseType != Response.ResponseLayoutType.default_2_column)
+                        throw new Exception("getfieldraw response type should be default_2_column, but is: " + send.Response.ResponseType.ToString());
 
                     if (send.Response.Entries.Count != 1)
                         throw new Exception("getfieldraw must query exactly one entry");
@@ -241,8 +250,8 @@ namespace KeePassCommand
                     if (outfile.Length == 0)
                         throw new Exception("getattachmentraw must be used in combination with -out: or -out-utf8: (will always be saved binary)");
 
-                    if (send.ResponseType != SendCommand.ResponseLayoutType.default_2_column)
-                        throw new Exception("getattachmentraw response type should be default_2_column, but is: " + send.ResponseType.ToString());
+                    if (send.Response.ResponseType != Response.ResponseLayoutType.default_2_column)
+                        throw new Exception("getattachmentraw response type should be default_2_column, but is: " + send.Response.ResponseType.ToString());
 
                     if (send.Response.Entries.Count != 1)
                         throw new Exception("getattachmentraw must query exactly one entry");
@@ -261,8 +270,8 @@ namespace KeePassCommand
                     if (outfile.Length == 0)
                         throw new Exception("getnoteraw must be used in combination with -out: or -out-utf8:");
 
-                    if (send.ResponseType != SendCommand.ResponseLayoutType.default_1_column)
-                        throw new Exception("getnoteraw response type should be default_1_column, but is: " + send.ResponseType.ToString());
+                    if (send.Response.ResponseType != Response.ResponseLayoutType.default_1_column)
+                        throw new Exception("getnoteraw response type should be default_1_column, but is: " + send.Response.ResponseType.ToString());
 
                     if (send.Response.Entries.Count != 1)
                         throw new Exception("getnoteraw must query exactly one entry");
@@ -313,22 +322,22 @@ namespace KeePassCommand
                     return;
                 }
 
-                switch (send.ResponseType)
+                switch (send.Response.ResponseType)
                 {
-                    case SendCommand.ResponseLayoutType.default_1_column:
-                    case SendCommand.ResponseLayoutType.default_2_column:
+                    case Response.ResponseLayoutType.default_1_column:
+                    case Response.ResponseLayoutType.default_2_column:
                         output.AppendLine("SUCCESS");
                         break;
 
                     default:
-                        throw new Exception("Unknown response layout: " + send.ResponseType.ToString());
+                        throw new Exception("Unknown response layout: " + send.Response.ResponseType.ToString());
                 }
 
                 foreach (List<ResponseItem> entry in send.Response.Entries)
                 {
-                    switch(send.ResponseType)
+                    switch(send.Response.ResponseType)
                     {
-                        case SendCommand.ResponseLayoutType.default_1_column:
+                        case Response.ResponseLayoutType.default_1_column:
                             output.AppendLine("B\t");
                             foreach (ResponseItem item in entry)
                             {
@@ -337,7 +346,7 @@ namespace KeePassCommand
                             output.AppendLine("E\t");
                             break;
 
-                        case SendCommand.ResponseLayoutType.default_2_column:
+                        case Response.ResponseLayoutType.default_2_column:
                             output.AppendLine("B\t");
                             foreach (ResponseItem item in entry)
                             {
@@ -347,7 +356,7 @@ namespace KeePassCommand
                             break;
 
                         default:
-                            throw new Exception("Unknown response layout: " + send.ResponseType.ToString());
+                            throw new Exception("Unknown response layout: " + send.Response.ResponseType.ToString());
                     }
                 }
             }

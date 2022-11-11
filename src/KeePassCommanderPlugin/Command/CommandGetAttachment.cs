@@ -8,7 +8,7 @@ namespace KeePassCommander.Command
 {
     public class CommandGetAttachment : ICommand
     {
-        public void Run(DebugLog Debug, IPluginHost KeePassHost, string[] parms, StringBuilder output)
+        public void Run(DebugLog Debug, IPluginHost KeePassHost, string[] parms, StringBuilder output, Dictionary<string, bool> allowedTitles)
         {
             Debug.OutputLine("Starting command getattachment");
 
@@ -21,7 +21,7 @@ namespace KeePassCommander.Command
                 {
                     titles.Add(name, new List<PwEntry>());
                 }
-                EntriesHelper.FindTitles(Debug, KeePassHost, titles);
+                EntriesHelper.FindTitles(Debug, KeePassHost, titles, allowedTitles);
             }
 
             List<string> attachmentnames = new List<string>();

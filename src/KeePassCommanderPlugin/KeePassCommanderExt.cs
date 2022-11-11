@@ -11,7 +11,8 @@ namespace KeePassCommander
         private IPluginHost KeePassHost = null;
 
         private readonly DebugLog Debug = new DebugLog();
-        private NamedPipeServer.NamedPipeServer Server = null;
+        private NamedPipeServer.NamedPipeServer NamedPipeServer = null;
+        private ViaFileSystemServer.ViaFileSystemServer ViaFileSystemServer = null;
 
         public override bool Initialize(IPluginHost host)
         {
@@ -32,9 +33,27 @@ namespace KeePassCommander
             }
 
             var CommandRunner = new Command.Runner(Debug, KeePassHost);
-            Server = new NamedPipeServer.NamedPipeServer(Debug, CommandRunner);
-            Server.StartServer();
+
+            NamedPipeServer = new NamedPipeServer.NamedPipeServer(Debug, CommandRunner);
+            NamedPipeServer.StartServer();
+
+            ViaFileSystemServer = new ViaFileSystemServer.ViaFileSystemServer(Debug, CommandRunner);
+            KeePassHost.MainWindow.FileOpened += OnFileOpened;
+            KeePassHost.MainWindow.FileClosed += OnFileClosed;
+            ViaFileSystemServer.StartServer();
+            ViaFileSystemServer.RescanEntries(KeePassHost);
+
             return true;
+        }
+
+        private void OnFileOpened(object sender, KeePass.Forms.FileOpenedEventArgs e)
+        {
+            if (ViaFileSystemServer != null) ViaFileSystemServer.RescanEntries(KeePassHost);
+        }
+
+        private void OnFileClosed(object sender, KeePass.Forms.FileClosedEventArgs e)
+        {
+            if (ViaFileSystemServer != null) ViaFileSystemServer.RescanEntries(KeePassHost);
         }
 
         public override void Terminate()
@@ -42,10 +61,19 @@ namespace KeePassCommander
             Debug.OutputLine("--- Terminate() of KeePassCommanderExt ---");
             if (KeePassHost == null) return;
 
-            if (Server != null)
+            KeePassHost.MainWindow.FileOpened -= OnFileOpened;
+            KeePassHost.MainWindow.FileClosed -= OnFileClosed;
+
+            if (NamedPipeServer != null)
             {
-                Server.StopServer();
-                Server = null;
+                NamedPipeServer.StopServer();
+                NamedPipeServer = null;
+            }
+
+            if (ViaFileSystemServer != null)
+            {
+                ViaFileSystemServer.StopServer();
+                ViaFileSystemServer = null;
             }
 
             KeePassHost = null;

@@ -4,3 +4,7 @@
     
     set "KeePassCommand_TestOutput=%tmp%\KeePassCommander.%KeePassCommand_TestBaseName%.output"
     set "KeePassCommand_TestExpected=%~dp0..\Expectations\%KeePassCommand_TestBaseName%.expected"
+    
+    md c:\incoming >nul 2>&1
+    md c:\incoming\KeePass >nul 2>&1
+    

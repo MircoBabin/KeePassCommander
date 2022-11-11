@@ -8,7 +8,7 @@ namespace KeePassCommander.Command
 {
     public class CommandGetNote : ICommand
     {
-        public void Run(DebugLog Debug, IPluginHost KeePassHost, string[] parms, StringBuilder output)
+        public void Run(DebugLog Debug, IPluginHost KeePassHost, string[] parms, StringBuilder output, Dictionary<string, bool> allowedTitles)
         {
             Debug.OutputLine("Starting command getnote");
 
@@ -25,7 +25,7 @@ namespace KeePassCommander.Command
                     }
                 }
 
-                EntriesHelper.FindTitles(Debug, KeePassHost, titles);
+                EntriesHelper.FindTitles(Debug, KeePassHost, titles, allowedTitles);
             }
 
             foreach (var keypair in titles)

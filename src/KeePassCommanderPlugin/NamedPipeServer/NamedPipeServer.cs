@@ -54,7 +54,7 @@ namespace KeePassCommander.NamedPipeServer
         }
 
         private object ServerLock = new object();
-        private Boolean Stop = false;
+        private volatile Boolean Stop = false;
         private NamedPipeServerStream ServerPipe = null;
         private List<NamedPipeServerConnection> ServerConnections = new List<NamedPipeServerConnection>();
 

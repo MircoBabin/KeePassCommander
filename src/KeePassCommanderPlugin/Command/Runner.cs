@@ -1,4 +1,5 @@
 ﻿using KeePass.Plugins;
+using System.Collections.Generic;
 using System.Text;
 
 namespace KeePassCommander.Command
@@ -17,7 +18,7 @@ namespace KeePassCommander.Command
             this.KeePassHost = KeePassHost;
         }
 
-        public StringBuilder Run(string[] parms)
+        public StringBuilder Run(string[] parms, Dictionary<string, bool> allowedTitles)
         {
             StringBuilder output = new StringBuilder();
             ICommand command = null;
@@ -36,7 +37,7 @@ namespace KeePassCommander.Command
                     command = new CommandListGroup();
             }
 
-            if (command != null) command.Run(Debug, KeePassHost, parms, output);
+            if (command != null) command.Run(Debug, KeePassHost, parms, output, allowedTitles);
 
             output.AppendLine();
             output.AppendLine(EndOfResponse);

@@ -46,7 +46,7 @@ namespace KeePassCommander.NamedPipeServer
                     Debug.OutputLine(sb.ToString());
                 }
 
-                writer.WriteLine(runner.Run(parms));
+                writer.WriteLine(runner.Run(parms, null));
                 writer.Flush();
 
                 Pipe.Flush();

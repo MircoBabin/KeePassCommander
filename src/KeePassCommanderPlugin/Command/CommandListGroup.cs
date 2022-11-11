@@ -7,7 +7,7 @@ namespace KeePassCommander.Command
 {
     public class CommandListGroup : ICommand
     {
-        public void Run(DebugLog Debug, IPluginHost KeePassHost, string[] parms, StringBuilder output)
+        public void Run(DebugLog Debug, IPluginHost KeePassHost, string[] parms, StringBuilder output, Dictionary<string, bool> allowedTitles)
         {
             Debug.OutputLine("Starting command listgroup");
 
@@ -24,7 +24,7 @@ namespace KeePassCommander.Command
                     }
                 }
 
-                EntriesHelper.FindTitles(Debug, KeePassHost, titles);
+                EntriesHelper.FindTitles(Debug, KeePassHost, titles, allowedTitles);
             }
 
             Dictionary<string, List<PwEntry>> found = new Dictionary<string, List<PwEntry>>();
@@ -33,46 +33,18 @@ namespace KeePassCommander.Command
                 {
                     foreach (PwEntry entry in keypair.Value)
                     {
-                        var notes = EntriesHelper.GetEntryField(Debug, KeePassHost, entry, PwDefs.NotesField);
-                        //KeePassCommanderListGroup=true
-                        //KeePassCommanderListAddItem={title}
-                        foreach (var line in notes.Split('\n'))
-                        {
-                            var command = line.Trim();
-                            string value;
-                            string search;
-
-                            search = "KeePassCommanderListGroup=";
-                            if (command.StartsWith(search))
-                            {
-                                value = command.Substring(search.Length);
-                                if (value.Trim() == "true")
-                                    EntriesHelper.FindTitlesInGroup(Debug, KeePassHost, entry, found);
-                            }
-                            else
-                            {
-                                search = "KeePassCommanderListAddItem=";
-                                if (command.StartsWith(search))
-                                {
-                                    value = command.Substring(search.Length);
-
-                                    EntriesHelper.FindTitle(Debug, KeePassHost, value, found);
-                                }
-                            }
-                        }
+                        EntriesHelper.ParseListGroupEntry(Debug, KeePassHost, entry, found);
                     }
                 }
+            }
 
+            foreach (var keypair in found)
+            {
+                foreach (PwEntry entry in keypair.Value)
                 {
-                    foreach (var keypair in found)
-                    {
-                        foreach (PwEntry entry in keypair.Value)
-                        {
-                            output.Append(EntriesHelper.GetEntryField(Debug, KeePassHost, entry, PwDefs.TitleField));
-                            output.Append("\t");
-                            output.AppendLine();
-                        }
-                    }
+                    output.Append(EntriesHelper.GetEntryField(Debug, KeePassHost, entry, PwDefs.TitleField));
+                    output.Append("\t");
+                    output.AppendLine();
                 }
             }
 

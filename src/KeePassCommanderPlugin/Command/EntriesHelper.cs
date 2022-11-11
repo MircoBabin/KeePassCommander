@@ -68,7 +68,7 @@ namespace KeePassCommander.Command
             return input;
         }
 
-        public static void FindTitles(DebugLog Debug, IPluginHost KeePassHost, Dictionary<string, List<PwEntry>> search)
+        public static void FindTitles(DebugLog Debug, IPluginHost KeePassHost, Dictionary<string, List<PwEntry>> search, Dictionary<string, bool> allowedTitles)
         {
             Debug.OutputLine("Starting FindTitles");
             if (search.Count == 0)
@@ -95,7 +95,8 @@ namespace KeePassCommander.Command
                             string title = GetEntryField(Debug, KeePassHost, entry, PwDefs.TitleField);
                             if (search.ContainsKey(title))
                             {
-                                search[title].Add(entry);
+                                if (allowedTitles == null || (allowedTitles.ContainsKey(title) && allowedTitles[title]))
+                                    search[title].Add(entry);
                             }
                         }
                     }
@@ -105,11 +106,11 @@ namespace KeePassCommander.Command
             Debug.OutputLine("Ended FindTitles");
         }
 
-        public static void FindTitle(DebugLog Debug, IPluginHost KeePassHost, string title, Dictionary<string, List<PwEntry>> found)
+        private static void FindTitle(DebugLog Debug, IPluginHost KeePassHost, string title, Dictionary<string, List<PwEntry>> found)
         {
             var titletofind = new Dictionary<string, List<PwEntry>>();
             titletofind.Add(title, new List<PwEntry>());
-            FindTitles(Debug, KeePassHost, titletofind);
+            FindTitles(Debug, KeePassHost, titletofind, null);
 
             List<PwEntry> foundEntries;
             if (found.ContainsKey(title))
@@ -125,7 +126,7 @@ namespace KeePassCommander.Command
             foundEntries.AddRange(titletofind[title]);
         }
 
-        public static  void FindTitlesInGroup(DebugLog Debug, IPluginHost KeePassHost, PwEntry groupEntry, Dictionary<string, List<PwEntry>> found)
+        private static void FindTitlesInGroup(DebugLog Debug, IPluginHost KeePassHost, PwEntry groupEntry, Dictionary<string, List<PwEntry>> found)
         {
             Debug.OutputLine("Starting FindTitlesInGroup");
             if (groupEntry == null)
@@ -160,6 +161,38 @@ namespace KeePassCommander.Command
             }
 
             Debug.OutputLine("Ended FindTitlesInGroup");
+        }
+
+        public static void ParseListGroupEntry(DebugLog Debug, IPluginHost KeePassHost, PwEntry entry, 
+            Dictionary<string, List<PwEntry>> found)
+        {
+            var notes = GetEntryField(Debug, KeePassHost, entry, PwDefs.NotesField);
+            //KeePassCommanderListGroup=true
+            //KeePassCommanderListAddItem={title}
+            foreach (var line in notes.Split('\n'))
+            {
+                var command = line.Trim();
+                string value;
+                string search;
+
+                search = "KeePassCommanderListGroup=";
+                if (command.StartsWith(search))
+                {
+                    value = command.Substring(search.Length);
+                    if (value.Trim() == "true")
+                        FindTitlesInGroup(Debug, KeePassHost, entry, found);
+                }
+                else
+                {
+                    search = "KeePassCommanderListAddItem=";
+                    if (command.StartsWith(search))
+                    {
+                        value = command.Substring(search.Length);
+
+                        FindTitle(Debug, KeePassHost, value, found);
+                    }
+                }
+            }
         }
     }
 }
