@@ -1,5 +1,6 @@
 @echo off
     set "KeePassCommandExe=%~dp0..\..\bin\Debug\KeePassCommand.exe"
+    set "KeePassCommandConfigXml=%~dp0..\..\bin\Debug\KeePassCommand.config.xml"
     set "KeePassCommand_TestBaseName=%~nx1"
     
     set "KeePassCommand_TestOutput=%tmp%\KeePassCommander.%KeePassCommand_TestBaseName%.output"
