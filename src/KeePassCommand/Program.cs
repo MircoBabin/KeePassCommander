@@ -139,19 +139,6 @@ namespace KeePassCommand
             Console.Write(sb.ToString());
         }
 
-        /*
-        KeePassCommand.config.xml
-
-        <?xml version="1.0" encoding="utf-8"?>
-        <Configuration>
-            <filesystem>s:\incoming\KeePass</filesystem>
-        </Configuration>
-        */
-        private class Configuration
-        {
-            public string filesystem { get; set; }
-        }
-
         static ProgramArguments ParseArguments(string[] args)
         {
             var result = new ProgramArguments();
@@ -209,11 +196,7 @@ namespace KeePassCommand
                         xmlfilename = Path.Combine(programPath, "KeePassCommand.config.xml");
                     }
 
-                    Configuration config;
-                    using (var reader = new StreamReader(xmlfilename))
-                    {
-                        config = (Configuration)new XmlSerializer(typeof(Configuration)).Deserialize(reader);
-                    }
+                    XmlConfiguration config = XmlConfiguration.Load(xmlfilename);
 
                     if (!String.IsNullOrWhiteSpace(config.filesystem) && Directory.Exists(config.filesystem))
                         result.filesystem = config.filesystem;
