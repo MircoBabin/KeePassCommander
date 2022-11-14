@@ -9,7 +9,7 @@ namespace KeePassCommand
         public Encoding outfile_encoding = null;
 
         public string filesystem = null;
-        public bool namedpipe = false;
+        public bool? namedpipe = null;
 
         public string outcommand = null;
         public List<string> outargs = new List<string>();

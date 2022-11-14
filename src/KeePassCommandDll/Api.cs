@@ -7,6 +7,46 @@ namespace KeePassCommandDll
 {
     public static class Api
     {
+        #region Communication Via
+        /*
+         * The (set as default) automatic determination algorithm for communication type is:
+         * 1) The default communication is via Named Pipe.
+         * 2) If KeePassCommand.config.xml is found in the same directory as KeePassCommandDll.dll, this will be used. 
+         *    The specified filesystem directory must exist, otherwise Named Pipe communication is used.
+
+              KeePassCommand.config.xml:
+
+              <?xml version="1.0" encoding="utf-8"?>
+              <Configuration>
+                  <filesystem>s:\incoming\KeePass</filesystem>
+              </Configuration>
+         */
+
+        private static CommandSender.CommunicationType _communicateVia = CommandSender.CommunicationType.DetermineAutomatically;
+        private static string _fileSystemDirectory = null;
+
+        public static void setCommunicationViaAutomaticDetermination()
+        {
+            _communicateVia = CommandSender.CommunicationType.DetermineAutomatically;
+            _fileSystemDirectory = null;
+        }
+
+        public static void setCommunicationViaNamedPipe()
+        {
+            _communicateVia = CommandSender.CommunicationType.NamedPipe;
+            _fileSystemDirectory = null;
+        }
+
+        public static void setCommunicationViaFileSystem(string FileSystemDirectory)
+        {
+            _communicateVia = CommandSender.CommunicationType.FileSystem;
+            _fileSystemDirectory = FileSystemDirectory;
+        }
+        #endregion
+
+
+
+
         public static List<ApiGetResponse> get(string KeePassEntryTitle)
         {
             return get(new List<string>() { KeePassEntryTitle });
@@ -29,7 +69,8 @@ namespace KeePassCommandDll
                 command.Append('\t');
             }
 
-            SendCommandViaNamedPipe send = new SendCommandViaNamedPipe(command.ToString());
+            var sender = new CommandSender(_communicateVia, _fileSystemDirectory);
+            var send = sender.Send(command.ToString());
 
             List<ApiGetResponse> results = new List<ApiGetResponse>();
             foreach (var entry in send.Response.Entries)
@@ -94,7 +135,8 @@ namespace KeePassCommandDll
                 command.Append('\t');
             }
 
-            SendCommandViaNamedPipe send = new SendCommandViaNamedPipe(command.ToString());
+            var sender = new CommandSender(_communicateVia, _fileSystemDirectory);
+            var send = sender.Send(command.ToString());
 
             List<ApiGetFieldResponse> results = new List<ApiGetFieldResponse>();
             foreach (var entry in send.Response.Entries)
@@ -137,7 +179,8 @@ namespace KeePassCommandDll
                 command.Append('\t');
             }
 
-            SendCommandViaNamedPipe send = new SendCommandViaNamedPipe(command.ToString());
+            var sender = new CommandSender(_communicateVia, _fileSystemDirectory);
+            var send = sender.Send(command.ToString());
 
             List<ApiGetAttachmentResponse> results = new List<ApiGetAttachmentResponse>();
             foreach (var entry in send.Response.Entries)

@@ -1,10 +1,6 @@
-﻿using KeePassCommandDll.Communication;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
+﻿using System;
 using System.IO;
 using System.Text;
-using System.Xml.Serialization;
 
 namespace KeePassCommand
 {
@@ -180,32 +176,8 @@ namespace KeePassCommand
                 }
             }
 
-            if (!String.IsNullOrWhiteSpace(result.filesystem) && result.namedpipe)
+            if (!String.IsNullOrWhiteSpace(result.filesystem) && result.namedpipe == true)
                 throw new Exception("Both commandline arguments -namedpipe and -filesystem: are specified. Only specify one of them.");
-
-            if (String.IsNullOrWhiteSpace(result.filesystem) && !result.namedpipe)
-            {
-                try
-                {
-                    string xmlfilename;
-                    {
-                        Process me = Process.GetCurrentProcess();
-                        string executableFileName = me.Modules[0].FileName;
-                        string programPath = Path.GetFullPath(Path.GetDirectoryName(executableFileName));
-
-                        xmlfilename = Path.Combine(programPath, "KeePassCommand.config.xml");
-                    }
-
-                    XmlConfiguration config = XmlConfiguration.Load(xmlfilename);
-
-                    if (!String.IsNullOrWhiteSpace(config.filesystem) && Directory.Exists(config.filesystem))
-                        result.filesystem = config.filesystem;
-                }
-                catch { }
-
-                if (String.IsNullOrWhiteSpace(result.filesystem) && !result.namedpipe)
-                    result.namedpipe = true; // if both -namedpipe and -filesystem: are omitted then use the default setting of namedpipe
-            }
 
             return result;
         }

@@ -32,6 +32,7 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.XML" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\Encryption.cs">
@@ -46,11 +47,13 @@
     <Compile Include="ApiGetResponse.cs" />
     <Compile Include="Communication\ISendCommand.cs" />
     <Compile Include="Communication\LineReader.cs" />
+    <Compile Include="Communication\CommandSender.cs" />
     <Compile Include="Communication\SendCommandViaFileSystem.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Communication\Response.cs" />
     <Compile Include="Communication\ResponseItem.cs" />
     <Compile Include="Communication\SendCommandViaNamedPipe.cs" />
+    <Compile Include="XmlConfiguration.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

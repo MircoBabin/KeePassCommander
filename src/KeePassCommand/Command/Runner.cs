@@ -69,13 +69,15 @@ namespace KeePassCommand.Command
                     }
                 }
 
-                ISendCommand send;
-                if (!String.IsNullOrWhiteSpace(options.filesystem))
-                    send = new SendCommandViaFileSystem(options.filesystem, sendCommand.ToString());
-                else if (options.namedpipe)
-                    send = new SendCommandViaNamedPipe(sendCommand.ToString());
+                CommandSender sender;
+                if (options.namedpipe == true)
+                    sender = new CommandSender(CommandSender.CommunicationType.NamedPipe);
+                else if (!String.IsNullOrWhiteSpace(options.filesystem))
+                    sender = new CommandSender(CommandSender.CommunicationType.FileSystem, options.filesystem);
                 else
-                    throw new Exception("Unknown communication method.");
+                    sender = new CommandSender(CommandSender.CommunicationType.DetermineAutomatically);
+
+                ISendCommand send = sender.Send(sendCommand.ToString());
 
                 command.Run(options, send);
             }
