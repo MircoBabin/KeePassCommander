@@ -33,10 +33,16 @@ namespace KeePassCommand
 
             sb.AppendLine();
 
-            sb.AppendLine("Syntax: KeePassCommand.exe <command> {-out:outputfilename OR -out-utf8:outputfilename} ...");
+            sb.AppendLine("Syntax: KeePassCommand.exe <command> {-filesystem:folderpath OR -namedpipe} {-out:outputfilename OR -out-utf8:outputfilename} ...");
+
+            sb.AppendLine("- If neither -filesystem nor -namedpipe is specified, the default will be Named Pipe. Unless the configuration file KeePassCommand.config.xml specifies other.");
+            sb.AppendLine("- When -namedpipe is specified, communication will be encrypted via a Named Pipe.");
+            sb.AppendLine("- When -filesystem:folderpath is specified, communication will be via encrypted files inside shared folder folderpath. A special KeePass entry with title starting with \"KeePassCommander.FileSystem\", with folderpath as url, and notes like listgroup must be present for this to work. The purpose is querying from inside a Virtual Machine. See https://github.com/MircoBabin/KeePassCommander/docs/VirtualMachine.md for more information.");
+
             sb.AppendLine("- Unless -out or -out-utf8 is used, output will be at the console (STDOUT).");
             sb.AppendLine("- When -out-utf8:outputfile is used, output will be written in outputfile using UTF-8 codepage.");
             sb.AppendLine("- When -out:outputfile is used, output will be written in outputfile using ANSI codepage.");
+
             sb.AppendLine("- \"KeePass-entry-title\" must exactly match (case sensitive), there is no fuzzy logic. All open databases in KeePass are searched.");
             sb.AppendLine("- When the expected \"KeePass-entry-title\" is not found (you know it must be there), you can assume KeePass is not started or the required database is not opened.");
 
@@ -93,10 +99,8 @@ namespace KeePassCommand
 
             sb.AppendLine();
             sb.AppendLine("* Advanced list titles in group");
-            sb.AppendLine("KeePassCommand.exe listgroup <-out-utf8:outputfile or -out:> \"KeePass-entry-title\"");
-            sb.AppendLine("e.g. KeePassCommand.exe listgroup -out-utf8:titles.txt \"All Entries\"");
-            sb.AppendLine("- With -out-utf8, \"titles\" are outputted as UTF-8.");
-            sb.AppendLine("- With -out, \"titles\" are outputted in ANSI codepage.");
+            sb.AppendLine("KeePassCommand.exe listgroup \"KeePass-entry-title\"");
+            sb.AppendLine("e.g. KeePassCommand.exe listgroup \"All Entries\"");
             sb.AppendLine("- The queried entry note may contain the line \"KeePassCommanderListGroup=true\".");
             sb.AppendLine("  This is not recursive, only titles in the current group are listed.");
             sb.AppendLine("- The queried entry note may contain lines \"KeePassCommanderListAddItem={title}\".");

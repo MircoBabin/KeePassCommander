@@ -5,6 +5,8 @@
 KeePass Commander is a plugin for the [KeePass password store](https://keepass.info/ "KeePass") program. 
 It is a command-line tool that provides a communication channel for PHP scripts, Windows CMD/BAT/PowerShell scripts, Python, C#, git, etc. to query the KeePass password store without requiring configuration or passwords.
 
+It can also query KeePass from within a [Virtual Machine](https://github.com/MircoBabin/KeePassCommander/docs/VirtualMachine.md). Read the [documentation here](https://github.com/MircoBabin/KeePassCommander/docs/VirtualMachine.md).
+
 ![Screenshot](screenshot.png)
 
 # Download binary
@@ -23,13 +25,16 @@ The minimum .NET framework required is 4.0.
 Execute **KeePassCommand.exe** without parameters to view the help.
 
 ```
-KeePassCommand 3.1
+KeePassCommand 4.0
 https://github.com/MircoBabin/KeePassCommander - MIT license
 
 KeePass Commander is a plugin for the KeePass password store (https://keepass.info/).
 It is a command-line tool that provides a communication channel for PHP scripts, Windows CMD/BAT/PowerShell scripts, Python, C#, git, etc. to query the KeePass password store without requiring configuration or passwords.
 
-Syntax: KeePassCommand.exe <command> {-out:outputfilename OR -out-utf8:outputfilename} ...
+Syntax: KeePassCommand.exe <command> {-filesystem:folderpath OR -namedpipe} {-out:outputfilename OR -out-utf8:outputfilename} ...
+- If neither -filesystem nor -namedpipe is specified, the default will be Named Pipe. Unless the configuration file KeePassCommand.config.xml specifies other.
+- When -namedpipe is specified, communication will be encrypted via a Named Pipe.
+- When -filesystem:folderpath is specified, communication will be via encrypted files inside shared folder folderpath. A special KeePass entry with title starting with "KeePassCommander.FileSystem", with folderpath as url, and notes like listgroup must be present for this to work. The purpose is querying from inside a Virtual Machine. See https://github.com/MircoBabin/KeePassCommander/docs/VirtualMachine.md for more information.
 - Unless -out or -out-utf8 is used, output will be at the console (STDOUT).
 - When -out-utf8:outputfile is used, output will be written in outputfile using UTF-8 codepage.
 - When -out:outputfile is used, output will be written in outputfile using ANSI codepage.
@@ -74,10 +79,8 @@ e.g. KeePassCommand.exe getnoteraw -out-utf8:mynote.txt "Sample Entry"
 - With -out, "Note" is outputted in ANSI codepage.
 
 * Advanced list titles in group
-KeePassCommand.exe listgroup <-out-utf8:outputfile or -out:> "KeePass-entry-title"
-e.g. KeePassCommand.exe listgroup -out-utf8:titles.txt "All Entries"
-- With -out-utf8, "titles" are outputted as UTF-8.
-- With -out, "titles" are outputted in ANSI codepage.
+KeePassCommand.exe listgroup "KeePass-entry-title"
+e.g. KeePassCommand.exe listgroup "All Entries"
 - The queried entry note may contain the line "KeePassCommanderListGroup=true".
   This is not recursive, only titles in the current group are listed.
 - The queried entry note may contain lines "KeePassCommanderListAddItem={title}".
@@ -101,6 +104,10 @@ Examples are found in the github directory **example**.
 
 Using [Git Credentials via KeePassCommander](https://github.com/MircoBabin/GitCredentialsViaKeePassCommander) the credentials for git repositories can be queried from KeePass upon a pull or push command.
 
+# Virtual Machine
+
+Via a shared folder it is possible to query the KeePass password store on the host (running outside the Virtual Machine) from within a Virtual Machine. Read the [documentation here](https://github.com/MircoBabin/KeePassCommander/docs/VirtualMachine.md).
+
 # Why
 The plugin [KeePassHttp](https://github.com/pfn/keepasshttp/) already exists for querying the password store. 
 I did not want to use this plugin, because it embeds a http server inside KeePass. 
@@ -108,7 +115,9 @@ And I don't want to "pair" with a code, because I want to communicate from the c
 
 So I build KeePassCommander.dll plugin which runs a Windows named-pipe-server inside KeePass. And a KeePassCommand.exe commandline tool to communicate with KeePassCommander.dll. 
 
-I'm using this plugin among other things to automate DeployHQ. In KeePass I store the DeployHQ API key. From a php script the API key is queried and then used. 
+I'm using this plugin among other things to automate DeployHQ. In KeePass I store the DeployHQ API key. From a php script the API key is queried and then used.
+
+When I had to maintain a Delphi project, I decided it was best to install a development Virtual Machine. The VM contains the Delphi Alexandria IDE and lots of purchased components that were installed scattered all around the virtual harddisk. Because I run KeePass on the host (outside the Virtual Machine) and use Git inside the Virtual Machine, I created a new filesystem communication channel, next to the named pipe communication channel. This way I still have one KeePass (outside the Virtual Machine) that is also used inside the Virtual Machine. Making it possible to backup the Virtual Machine without having any passwords inside it.
 
 # Automatic installation scripts
 For unattended installation scripts the following flow can be used for the latest version:
