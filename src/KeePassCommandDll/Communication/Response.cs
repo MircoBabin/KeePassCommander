@@ -8,8 +8,8 @@ namespace KeePassCommandDll.Communication
     {
         public List<List<ResponseItem>> Entries = new List<List<ResponseItem>>();
 
-        private const string BeginOfResponse = "\t\t\t[--- begin of response 3.0 ---]\t\t\t";
-        private const string EndOfResponse = "\t\t\t[--- end of response 3.0 ---]\t\t\t";
+        private const string BeginOfResponse = "\t\t\t[--- begin of response 4.0 ---]\t\t\t";
+        private const string EndOfResponse = "\t\t\t[--- end of response 4.0 ---]\t\t\t";
 
         private string ResponseForCommand;
         public enum ResponseLayoutType { none, default_1_column, default_2_column };
@@ -23,6 +23,11 @@ namespace KeePassCommandDll.Communication
         public void ReadFromStream(StringReader reader)
         {
             ReadFromStream(new LineReader(reader));
+        }
+
+        public void ReadFromStream(string data)
+        {
+            ReadFromStream(new LineReader(data));
         }
 
         public void ReadFromStream(LineReader reader)

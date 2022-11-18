@@ -6,8 +6,8 @@ namespace KeePassCommander.Command
 {
     public class Runner
     {
-        public const string BeginOfResponse = "\t\t\t[--- begin of response 3.0 ---]\t\t\t";
-        private const string EndOfResponse = "\t\t\t[--- end of response 3.0 ---]\t\t\t";
+        public const string BeginOfResponse = "\t\t\t[--- begin of response 4.0 ---]\t\t\t";
+        private const string EndOfResponse = "\t\t\t[--- end of response 4.0 ---]\t\t\t";
 
         private DebugLog Debug;
         private IPluginHost KeePassHost;

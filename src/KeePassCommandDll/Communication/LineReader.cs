@@ -19,6 +19,12 @@ namespace KeePassCommandDll.Communication
             _stringReader = reader;
         }
 
+        public LineReader(string data)
+        {
+            _streamReader = null;
+            _stringReader = new StringReader(data);
+        }
+
         public string ReadLine()
         {
             if (_streamReader != null)

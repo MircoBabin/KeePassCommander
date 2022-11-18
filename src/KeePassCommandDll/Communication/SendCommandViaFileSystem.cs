@@ -114,11 +114,7 @@ namespace KeePassCommandDll.Communication
                     WriteRequest(requestFilename, encryption.Encrypt(Command));
 
                     string response = encryption.Decrypt(ReadResponse(responseFilename));
-
-                    using (var reader = new StringReader(response))
-                    { 
-                        Response.ReadFromStream(reader);
-                    }
+                    Response.ReadFromStream(response);
                 }
             }
             finally
