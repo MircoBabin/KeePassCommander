@@ -53,7 +53,7 @@ After testing, remove this line from the notes!
 * Inside the VM open a dosprompt and issue:
 
 ```
-cd /d c:\\projects\\bin\\KeePassCommander
+cd /d c:\projects\bin\KeePassCommander
 KeePassCommand.exe listgroup "KeePassCommander.FileSystem [VM]"
 ```
 
