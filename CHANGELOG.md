@@ -4,7 +4,7 @@
 Release date: 18 november 2022
 
 * add: communication via the named pipe is now encrypted. First a shared key is determined via the Diffie-Hellman (and Merkle) protocol. Then further communication uses Aes encryption with the agreed shared key.
-* add: encrypted communication via the filesystem. To be able to communicate from within a [Virtual Machine](https://github.com/MircoBabin/KeePassCommander/docs/VirtualMachine.md). And possibly from within a RDP session.
+* add: encrypted communication via the filesystem. To be able to communicate from within a [Virtual Machine](docs/VirtualMachine.md). And possibly from within a RDP session.
 
 ## Version 3.1
 Release date: 14 october 2022
