@@ -13,7 +13,7 @@ p.s. Off course this system can be reversed for running KeePass inside the VM an
 
 ```
 title: KeePassCommander.FileSystem [VM]
-url: c:\\incoming\\VmShared\\KeePass
+url: c:\incoming\VmShared\KeePass
 
 notes:
 KeePassCommanderListGroup=true
@@ -30,7 +30,7 @@ KeePassCommanderListGroup=true
 ```
 <?xml version="1.0" encoding="utf-8"?>
 <Configuration>
-    <filesystem>s:\\KeePass</filesystem>
+    <filesystem>s:\KeePass</filesystem>
 </Configuration>
 ```
 
