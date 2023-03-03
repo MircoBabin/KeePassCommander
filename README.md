@@ -108,6 +108,10 @@ Using [Git Credentials via KeePassCommander](https://github.com/MircoBabin/GitCr
 
 Via a shared folder it is possible to query the KeePass password store on the host (running outside the Virtual Machine) from within a Virtual Machine. Read the [documentation here](docs/VirtualMachine.md).
 
+# Listgroup
+
+With the ```listgroup``` command multiple titles can be grouped in KeePass. They can be processed in a ```foreach``` kind a manner. Read the [documentation here](docs/ListGroup.md).
+
 # Why
 The plugin [KeePassHttp](https://github.com/pfn/keepasshttp/) already exists for querying the password store. 
 I did not want to use this plugin, because it embeds a http server inside KeePass. 

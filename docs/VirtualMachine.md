@@ -9,7 +9,7 @@ p.s. Off course this system can be reversed for running KeePass inside the VM an
 ## Prerequisites on the host (outside the Virtual Machine)
 
 * The host provides a shared folder. E.g. c:\\incoming\\VmShared\\KeePass
-* The host machine is running KeePass. And inside the KeePass database an entry must be present. The title must start with KeePassCommander.FileSystem, the url points to the shared folder and the notes specify what entries are allowed to query. The notes have the same syntax as a "listgroup" entry.
+* The host machine is running KeePass. And inside the KeePass database an entry must be present. The title must start with KeePassCommander.FileSystem, the url points to the shared folder and the notes specify what entries are allowed to query. The notes have the same syntax as a [listgroup entry](ListGroup.md).
 
 ```
 title: KeePassCommander.FileSystem [VM]
