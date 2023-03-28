@@ -1,5 +1,10 @@
 # KeePassCommander changelog
 
+## Version 4.1
+Release date: 28 march 2023
+
+* fix: C# programming language connector.
+
 ## Version 4.0
 Release date: 18 november 2022
 
