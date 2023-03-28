@@ -107,7 +107,7 @@ namespace KeePassCommand
                 entry.Notes = GetResultPropertyString(result, ApiGetResponse, "Notes");
             }
 
-            if (fieldNames != null & fieldNames.Length > 0)
+            if (fieldNames != null && fieldNames.Length > 0)
             {
                 var result = KeePassCommandDll_ApiGetfield.Invoke(null, new object[] { title, fieldNames });
 
@@ -126,7 +126,7 @@ namespace KeePassCommand
                 }
             }
 
-            if (attachmentNames != null & attachmentNames.Length > 0)
+            if (attachmentNames != null && attachmentNames.Length > 0)
             {
                 var result = KeePassCommandDll_ApiGetattachment.Invoke(null, new object[] { title, attachmentNames });
 
