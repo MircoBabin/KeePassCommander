@@ -50,6 +50,24 @@ using System.Reflection;
 
 namespace KeePassCommand
 {
+    public enum CommunicationType { Unknown, DetermineAutomatically, NamedPipe, FileSystem }
+    public class KeePassCommunicationVia
+    {
+        public string Name { get; set; }
+
+        public string XmlConfigFilename { get; set; }
+        public CommunicationType SendVia { get; set; }
+        public string FileSystemDirectory { get; set; }
+
+        public KeePassCommunicationVia()
+        {
+            Name = null;
+            XmlConfigFilename = null;
+            SendVia = CommunicationType.Unknown;
+            FileSystemDirectory = null;
+        }
+    }
+
     public class KeePassEntryField
     {
         public string Name { get; set; }
@@ -78,20 +96,48 @@ namespace KeePassCommand
 
         public List<KeePassEntryAttachment> Attachments { get; set; }
 
+        public List<KeePassCommunicationVia> CommunicationVia { get; set; }
+
         public KeePassEntry()
         {
             this.Fields = new List<KeePassEntryField>();
             this.Attachments = new List<KeePassEntryAttachment>();
+            this.CommunicationVia = new List<KeePassCommunicationVia>();
+        }
+
+        private static KeePassCommunicationVia getLastCommunicationVia(string Name)
+        {
+            KeePassCommunicationVia via = new KeePassCommunicationVia();
+            via.Name = Name;
+
+            var result = KeePassCommandDll_ApiGetLastCommunicationVia.Invoke(null, new object[] { });
+            if (result == null) return via;
+
+            Type ApiCommunicationSettings = result.GetType();
+
+            via.XmlConfigFilename = GetResultPropertyString(result, ApiCommunicationSettings, "XmlConfigFilename");
+            string enumValue = GetResultPropertyEnumAsString(result, ApiCommunicationSettings, "SendVia");
+            if (enumValue == "DetermineAutomatically")
+                via.SendVia = CommunicationType.DetermineAutomatically;
+            else if (enumValue == "NamedPipe")
+                via.SendVia = CommunicationType.NamedPipe;
+            else if (enumValue == "FileSystem")
+                via.SendVia = CommunicationType.FileSystem;
+
+            via.FileSystemDirectory = GetResultPropertyString(result, ApiCommunicationSettings, "FileSystemDirectory");
+
+            return via;
         }
 
         public static KeePassEntry getfirst(string title, string[] fieldNames = null, string[] attachmentNames = null)
         {
-            if (KeePassCommandDll_ApiGetfirst == null) throw new Exception("Call KeePassEntry.Initialize() first");
+            if (!InitializeCalled) throw new Exception("Call KeePassEntry.Initialize() first");
 
             var entry = new KeePassEntry();
 
             {
                 var result = KeePassCommandDll_ApiGetfirst.Invoke(null, new object[] { title });
+                entry.CommunicationVia.Add(getLastCommunicationVia("getfirst"));
                 if (result == null) return entry;
 
                 Type ApiGetResponse = result.GetType();
@@ -110,6 +156,7 @@ namespace KeePassCommand
             if (fieldNames != null && fieldNames.Length > 0)
             {
                 var result = KeePassCommandDll_ApiGetfield.Invoke(null, new object[] { title, fieldNames });
+                entry.CommunicationVia.Add(getLastCommunicationVia("getfield"));
 
                 if (result != null)
                 {
@@ -129,6 +176,7 @@ namespace KeePassCommand
             if (attachmentNames != null && attachmentNames.Length > 0)
             {
                 var result = KeePassCommandDll_ApiGetattachment.Invoke(null, new object[] { title, attachmentNames });
+                entry.CommunicationVia.Add(getLastCommunicationVia("getattachment"));
 
                 if (result != null)
                 {
@@ -146,6 +194,18 @@ namespace KeePassCommand
             }
 
             return entry;
+        }
+
+        protected static string GetResultPropertyEnumAsString(object obj, Type type, string propertyName)
+        {
+            PropertyInfo prop = type.GetProperty(propertyName);
+            if (prop == null) return null;
+            if (!prop.PropertyType.IsEnum) return null;
+
+            Type enumType = prop.PropertyType;
+            var enumValue = prop.GetValue(obj, null);
+
+            return Enum.Format(enumType, enumValue, "G");
         }
 
         protected static string GetResultPropertyString(object obj, Type type, string propertyName)
@@ -166,15 +226,18 @@ namespace KeePassCommand
 
 
         #region KeePassCommandDll loading
+        protected static bool InitializeCalled = false;
         protected static Assembly KeePassCommandDll = null;
         protected static Type KeePassCommandDll_Api = null;
         protected static MethodInfo KeePassCommandDll_ApiGetfirst = null;
         protected static MethodInfo KeePassCommandDll_ApiGetfield = null;
         protected static MethodInfo KeePassCommandDll_ApiGetattachment = null;
+        protected static MethodInfo KeePassCommandDll_ApiGetLastCommunicationVia = null;
 
-        public static void Initialize(string KeePassCommandDllPath)
+        public static void Initialize(string KeePassCommandDllPath,
+            CommunicationType communication = CommunicationType.DetermineAutomatically, string FileSystemDirectory = null)
         {
-            if (KeePassCommandDll_ApiGetfirst != null) throw new Exception("KeePassEntry.Initialize() has already been called");
+            if (InitializeCalled) throw new Exception("KeePassEntry.Initialize() has already been called");
 
             if (String.IsNullOrEmpty(KeePassCommandDllPath))
                 throw new Exception("KeePassCommandDllPath is not provided");
@@ -196,6 +259,34 @@ namespace KeePassCommand
 
             KeePassCommandDll_ApiGetattachment = KeePassCommandDll_Api.GetMethod("getattachment", new Type[] { typeof(string), typeof(string[]) });
             if (KeePassCommandDll_ApiGetattachment == null) throw new Exception("Error loading KeePassCommandDll.dll [KeePassCommandDll.Api.getattachment(string, string[]) method] from " + KeePassCommandDllPath);
+
+            KeePassCommandDll_ApiGetLastCommunicationVia = KeePassCommandDll_Api.GetMethod("getLastCommunicationVia", new Type[] { });
+            if (KeePassCommandDll_ApiGetLastCommunicationVia == null) throw new Exception("Error loading KeePassCommandDll.dll [KeePassCommandDll.Api.getLastCommunicationVia() method] from " + KeePassCommandDllPath);
+
+            switch (communication)
+            {
+                case CommunicationType.NamedPipe:
+                    {
+                        MethodInfo KeePassCommandDll_setCommunicationViaNamedPipe;
+                        KeePassCommandDll_setCommunicationViaNamedPipe = KeePassCommandDll_Api.GetMethod("setCommunicationViaNamedPipe", new Type[] { });
+                        if (KeePassCommandDll_setCommunicationViaNamedPipe == null) throw new Exception("Error loading KeePassCommandDll.dll [KeePassCommandDll.Api.setCommunicationViaNamedPipe() method] from " + KeePassCommandDllPath);
+
+                        KeePassCommandDll_setCommunicationViaNamedPipe.Invoke(null, new object[] { });
+                    }
+                    break;
+
+                case CommunicationType.FileSystem:
+                    {
+                        MethodInfo KeePassCommandDll_setCommunicationViaFileSystem;
+                        KeePassCommandDll_setCommunicationViaFileSystem = KeePassCommandDll_Api.GetMethod("setCommunicationViaFileSystem", new Type[] { typeof(string) });
+                        if (KeePassCommandDll_setCommunicationViaFileSystem == null) throw new Exception("Error loading KeePassCommandDll.dll [KeePassCommandDll.Api.setCommunicationViaFileSystem(string) method] from " + KeePassCommandDllPath);
+
+                        KeePassCommandDll_setCommunicationViaFileSystem.Invoke(null, new object[] { FileSystemDirectory });
+                    }
+                    break;
+            }
+
+            InitializeCalled = true;
         }
         #endregion
     }
