@@ -7,8 +7,11 @@ namespace CsharpExample
 {
     class Program
     {
-        static string FindKeePassCommandDll()
+        static string FindKeePassCommandDll(string fixedFilename)
         {
+            if (!string.IsNullOrWhiteSpace(fixedFilename))
+                return fixedFilename;
+
             string basepath = Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName);
 
             #if DEBUG
@@ -36,14 +39,41 @@ namespace CsharpExample
 
         static void Main(string[] args)
         {
-            string dll = FindKeePassCommandDll();
-            if (dll == null)
+            /* args[0] = <...\KeePassCommandDll.dll> --> (optional) full path of KeePassCommandDll.dll
+             * args[1] = "namedpipe"                 --> (optional) use namedpipe communication
+             * args[1] = <path>                      --> (optional) use filesystem communication via <path>
+             */
+            Console.OutputEncoding = System.Text.Encoding.UTF8;
+
+            string dll = FindKeePassCommandDll(args.Length > 0 ? args[0] : null);
+            if (dll != null)
+                dll = Path.GetFullPath(dll);
+            if (dll == null || !File.Exists(dll))
             {
-                Console.WriteLine("Error locating KeePassCommandDll.dll");
+                Console.WriteLine(dll);
+                Console.WriteLine("KeePassCommandDll.dll does not exist.");
                 Environment.Exit(1);
                 return;
             }
-            KeePassEntry.Initialize(dll);
+
+            if (args.Length > 1)
+            {
+                if (args[1] == "namedpipe")
+                {
+                    Console.WriteLine("Using namedpipe communication.");
+                    KeePassEntry.Initialize(dll, KeePassCommand.CommunicationType.NamedPipe);
+                }
+                else
+                {
+                    Console.WriteLine("Using filesystem communication: " + args[1] + ".");
+                    KeePassEntry.Initialize(dll, KeePassCommand.CommunicationType.FileSystem, args[1]);
+                }
+            }
+            else
+            {
+                Console.WriteLine("Using automatically determined communication via KeePassCommand.config.xml.");
+                KeePassEntry.Initialize(dll);
+            }
 
             KeePassEntry entry = null;
             string title = "Sample Entry";
@@ -53,7 +83,11 @@ namespace CsharpExample
                     new string[] { "extra field 1", "extra password 1" },
                     new string[] { "example_attachment.txt" });
             }
-            catch { }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+            }
+
             if (entry == null)
             {
                 Console.WriteLine("KeePass is not started");
@@ -61,14 +95,36 @@ namespace CsharpExample
                 Environment.Exit(2);
                 return;
             }
+
+            foreach (var via in entry.CommunicationVia)
+            {
+                Console.WriteLine();
+                Console.WriteLine(via.Name + " communicated via " + via.SendVia.ToString() + ".");
+
+                if (via.XmlConfigFilename != null)
+                {
+                    string config = Path.GetFullPath(via.XmlConfigFilename);
+                    if (Path.GetDirectoryName(config) == Path.GetDirectoryName(dll))
+                    {
+                        config = Path.GetFileName(config) + " in same directory as KeePassCommandDll.dll";
+                    }
+
+                    Console.WriteLine("Used configuration: " + config);
+                }
+
+                if (via.SendVia == CommunicationType.FileSystem)
+                {
+                    Console.WriteLine("Used filesystem: " + via.FileSystemDirectory);
+                }
+            }
+            Console.WriteLine();
+
             if (entry.Title != title)
             {
                 Console.WriteLine("KeePass Entry not found: " + title);
                 Environment.Exit(3);
             }
 
-            Console.OutputEncoding = System.Text.Encoding.UTF8;
-            Console.WriteLine();
             Console.WriteLine("title     : " + entry.Title);
             Console.WriteLine("username  : " + entry.Username);
             Console.WriteLine("password  : " + entry.Password);
@@ -88,7 +144,7 @@ namespace CsharpExample
             foreach (var attachment in entry.Attachments)
             {
                 Console.WriteLine("attachment: " + attachment.Name);
-                Console.WriteLine("     value: " + attachment.Value);
+                Console.WriteLine("     value: " + BitConverter.ToString(attachment.Value).Replace('-', ' '));
             }
 
             Environment.Exit(0);
