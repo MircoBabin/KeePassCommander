@@ -42,9 +42,13 @@ namespace KeePassCommandDll
             _communicateVia = CommandSender.CommunicationType.FileSystem;
             _fileSystemDirectory = FileSystemDirectory;
         }
+
+        private static CommandSender.CommunicationSettings _lastCommunicationVia = null;
+        public static CommandSender.CommunicationSettings getLastCommunicationVia()
+        {
+            return _lastCommunicationVia;
+        }
         #endregion
-
-
 
 
         public static List<ApiGetResponse> get(string KeePassEntryTitle)
@@ -69,8 +73,10 @@ namespace KeePassCommandDll
                 command.Append('\t');
             }
 
+            _lastCommunicationVia = null;
             var sender = new CommandSender(_communicateVia, _fileSystemDirectory);
             var send = sender.Send(command.ToString());
+            _lastCommunicationVia = sender.CommunicationVia;
 
             List<ApiGetResponse> results = new List<ApiGetResponse>();
             foreach (var entry in send.Response.Entries)
@@ -135,8 +141,10 @@ namespace KeePassCommandDll
                 command.Append('\t');
             }
 
+            _lastCommunicationVia = null;
             var sender = new CommandSender(_communicateVia, _fileSystemDirectory);
             var send = sender.Send(command.ToString());
+            _lastCommunicationVia = sender.CommunicationVia;
 
             List<ApiGetFieldResponse> results = new List<ApiGetFieldResponse>();
             foreach (var entry in send.Response.Entries)
@@ -179,8 +187,10 @@ namespace KeePassCommandDll
                 command.Append('\t');
             }
 
+            _lastCommunicationVia = null;
             var sender = new CommandSender(_communicateVia, _fileSystemDirectory);
             var send = sender.Send(command.ToString());
+            _lastCommunicationVia = sender.CommunicationVia;
 
             List<ApiGetAttachmentResponse> results = new List<ApiGetAttachmentResponse>();
             foreach (var entry in send.Response.Entries)

@@ -1,5 +1,4 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using System.Reflection;
 using System.Xml.Serialization;
 
@@ -19,14 +18,29 @@ namespace KeePassCommandDll
     {
         public string filesystem { get; set; }
 
+        [XmlIgnoreAttribute]
+        private string _xmlfilename = null;
+
+        private void SetXmlFilename(string Filename)
+        {
+            _xmlfilename = Filename;
+        }
+
+        public string GetXmlFilename()
+        {
+            return _xmlfilename;
+        }
+
         public static XmlConfiguration Load()
         {
-            string xmlfilename = Path.GetDirectoryName(Path.GetFullPath(new Uri(Assembly.GetExecutingAssembly().CodeBase).LocalPath));
-            xmlfilename = Path.Combine(xmlfilename, "KeePassCommand.config.xml");
+            string myPath = Path.GetFullPath(Path.GetDirectoryName(Assembly.GetAssembly(typeof(XmlConfiguration)).Location));
+            string xmlfilename = Path.Combine(myPath, "KeePassCommand.config.xml");
 
             using (var reader = new StreamReader(xmlfilename))
             {
-                return (XmlConfiguration)new XmlSerializer(typeof(XmlConfiguration)).Deserialize(reader);
+                var config = (XmlConfiguration)new XmlSerializer(typeof(XmlConfiguration)).Deserialize(reader);
+                config.SetXmlFilename(xmlfilename);
+                return config;
             }
         }
     }
