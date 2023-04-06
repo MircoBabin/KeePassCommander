@@ -1,0 +1,29 @@
+Using automatically determined communication via KeePassCommand.config.xml.
+
+getfirst communicated via FileSystem.
+Used configuration: KeePassCommand.config.xml in same directory as KeePassCommandDll.dll
+Used filesystem: c:\incoming\KeePass
+
+getfield communicated via FileSystem.
+Used configuration: KeePassCommand.config.xml in same directory as KeePassCommandDll.dll
+Used filesystem: c:\incoming\KeePass
+
+getattachment communicated via FileSystem.
+Used configuration: KeePassCommand.config.xml in same directory as KeePassCommandDll.dll
+Used filesystem: c:\incoming\KeePass
+
+title     : Sample Entry
+username  : User Name
+password  : Password
+url       : https://keepass.info/
+urlscheme : https
+urlhost   : keepass.info
+urlport   : 443
+urlpath   : /
+notes     : Notes Één €ûrò
+field     : extra field 1
+     value: Some extra data
+field     : extra password 1
+     value: Some extra password
+attachment: example_attachment.txt
+     value: 54 68 69 73 20 69 73 20 61 6E 20 61 74 74 61 63 68 6D 65 6E 74 2E 0D 0A 0D 0A 57 69 74 68 20 74 68 72 65 65 20 6C 69 6E 65 73 20 69 6E 20 69 74 2E

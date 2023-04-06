@@ -39,11 +39,44 @@
     
     set "KeePassCommand_TestExpected=%Org_KeePassCommand_TestExpected%.AnotherEntry"
     call "%~dp0Utils\Utils.diff.bat" "" "not-equal"
-    if errorlevel 1 goto end
+    if errorlevel 1 exit /b 1
 
     set "KeePassCommand_TestExpected=%Org_KeePassCommand_TestExpected%.AnotherEntry-filesystem"
     call "%~dp0Utils\Utils.diff.bat"
-    if errorlevel 1 goto end
+    if errorlevel 1 exit /b 1
+
+:test4
+    rem run CsharpExample.exe with KeePassCommand.config.xml in directory of KeePassCommandDll.dll
+
+    del /q "%KeePassCommandConfigXml%" >nul 2>&1
+    copy "%~dp0Test.filesystem.KeePassCommand.config.xml" "%KeePassCommandConfigXml%" >nul 2>&1
+
+    "%~dp0\..\Example\CsharpExample.exe" "%KeePassCommandDllDll%" > "%KeePassCommand_TestOutput%"
+
+    del /q "%KeePassCommandConfigXml%" >nul 2>&1
+
+    set "KeePassCommand_TestExpected=%Org_KeePassCommand_TestExpected%.CsharpExample.auto"
+    call "%~dp0Utils\Utils.diff.bat"
+    if errorlevel 1 exit /b 1
+
+:test5
+    rem run CsharpExample.exe with filesystem
+
+    "%~dp0\..\Example\CsharpExample.exe" "%KeePassCommandDllDll%" "%KeePassCommand_FileSystemDirectory%" > "%KeePassCommand_TestOutput%"
+
+    set "KeePassCommand_TestExpected=%Org_KeePassCommand_TestExpected%.CsharpExample.filesystem"
+    call "%~dp0Utils\Utils.diff.bat"
+    if errorlevel 1 exit /b 1
+
+:test6
+    rem run CsharpExample.exe with namedpipe
+
+    "%~dp0\..\Example\CsharpExample.exe" "%KeePassCommandDllDll%" "namedpipe" > "%KeePassCommand_TestOutput%"
+
+    set "KeePassCommand_TestExpected=%Org_KeePassCommand_TestExpected%.CsharpExample.namedpipe"
+    call "%~dp0Utils\Utils.diff.bat"
+    if errorlevel 1 exit /b 1
+
 
 :end    
     exit /b 0
