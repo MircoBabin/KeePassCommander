@@ -25,7 +25,7 @@ The minimum .NET framework required is 4.0.
 Execute **KeePassCommand.exe** without parameters to view the help.
 
 ```
-KeePassCommand 4.0
+KeePassCommand 4.2
 https://github.com/MircoBabin/KeePassCommander - MIT license
 
 KeePass Commander is a plugin for the KeePass password store (https://keepass.info/).
@@ -103,6 +103,10 @@ Examples are found in the github directory **example**.
 # GIT
 
 Using [Git Credentials via KeePassCommander](https://github.com/MircoBabin/GitCredentialsViaKeePassCommander) the credentials for git repositories can be queried from KeePass upon a pull or push command.
+
+# Code signing certificate
+
+Using [BuildStamp](https://github.com/MircoBabin/BuildStamp) the code signing certificate can be stored in the KeePass password store. And used to digitally sign executables.
 
 # Virtual Machine
 
