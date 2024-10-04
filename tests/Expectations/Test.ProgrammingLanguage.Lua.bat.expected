@@ -1,0 +1,18 @@
+"attachments"= {
+    "example_attachment.txt"=This is an attachment.
+
+With three lines in it.
+}
+"fields"= {
+    "extra field 1"=Some extra data
+    "extra password 1"=Some extra password
+}
+"notes"=Notes Één €ûrò
+"password"=Password
+"title"=Sample Entry
+"url"=https://keepass.info/
+"urlhost"=keepass.info
+"urlpath"=/
+"urlport"=443
+"urlscheme"=https
+"username"=User Name
