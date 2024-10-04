@@ -1,5 +1,10 @@
 # KeePassCommander changelog
 
+## Version 4.4
+Release date: 4 oktober 2024
+
+* fix: KeePassEntry.lua in release zip.
+
 ## Version 4.3
 Release date: 4 oktober 2024
 
