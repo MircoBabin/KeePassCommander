@@ -1,5 +1,15 @@
 # KeePassCommander changelog
 
+## Version 4.3
+Release date: 4 oktober 2024
+
+* add: getattachmentraw output to stdout.
+* add: getfieldraw output to stdout.
+* add: getnoteraw output to stdout.
+* add: -stdout-utf8 to force utf-8 (with BOM) output to stdout (console).
+* add: -stdout-utf8nobom to force utf-8 (without BOM) output to stdout (console).
+* add: Lua connector
+
 ## Version 4.2
 Release date: 6 april 2023
 
@@ -75,12 +85,12 @@ Release date: 20 may 2020
 * resolve Field References
 * added C# connector
 
-## Version 2.1 [patch 3] 
+## Version 2.1 [patch 3]
 Release date: 29 jan 2020
 
 * trying to fix issue #3 "Doesn't work with a different KeePass version"
 
-## Version 2.0 
+## Version 2.0
 Release date: 8 nov 2019
 
 * added: Get file attachments

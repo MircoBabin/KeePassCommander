@@ -25,7 +25,7 @@ The minimum .NET framework required is 4.0.
 Execute **KeePassCommand.exe** without parameters to view the help.
 
 ```
-KeePassCommand 4.2
+KeePassCommand 4.3
 https://github.com/MircoBabin/KeePassCommander - MIT license
 
 KeePass Commander is a plugin for the KeePass password store (https://keepass.info/).
@@ -35,8 +35,10 @@ Syntax: KeePassCommand.exe <command> {-filesystem:folderpath OR -namedpipe} {-ou
 - If neither -filesystem nor -namedpipe is specified, the default will be Named Pipe. Unless the configuration file KeePassCommand.config.xml specifies other.
 - When -namedpipe is specified, communication will be encrypted via a Named Pipe.
 - When -filesystem:folderpath is specified, communication will be via encrypted files inside shared folder folderpath. A special KeePass entry with title starting with "KeePassCommander.FileSystem", with folderpath as url, and notes like listgroup must be present for this to work. The purpose is querying from inside a Virtual Machine. See https://github.com/MircoBabin/KeePassCommander/docs/VirtualMachine.md for more information.
-- Unless -out or -out-utf8 is used, output will be at the console (STDOUT).
-- When -out-utf8:outputfile is used, output will be written in outputfile using UTF-8 codepage.
+- Unless -out or -out-utf8 is used, output will be at the console (STDOUT) (without BOM).
+- If -stdout-utf8 is used, output at the console (STDOUT) will always use UTF-8 codepage (with BOM).
+- If -stdout-utf8nobom is used, output at the console (STDOUT) will always use UTF-8 codepage (without BOM).
+- When -out-utf8:outputfile is used, output will be written in outputfile using UTF-8 codepage (with BOM).
 - When -out:outputfile is used, output will be written in outputfile using ANSI codepage.
 - "KeePass-entry-title" must exactly match (case sensitive), there is no fuzzy logic. All open databases in KeePass are searched.
 - When the expected "KeePass-entry-title" is not found (you know it must be there), you can assume KeePass is not started or the required database is not opened.
@@ -51,32 +53,35 @@ KeePassCommand.exe getfield "KeePass-entry-title" "fieldname" "fieldname" ...
 e.g. KeePassCommand.exe getfield "Sample Entry" "extra field 1" "extra password 1"
 - "Value" is outputted as UTF-8, base64 encoded.
 
-* Advanced get string field raw into file
-KeePassCommand.exe getfieldraw <-out-utf8:outputfile or -out:> "KeePass-entry-title" "fieldname"
+* Advanced get string field RAW
+KeePassCommand.exe getfieldraw "KeePass-entry-title" "fieldname"
 e.g. KeePassCommand.exe getfieldraw -out-utf8:myfield.txt "Sample Entry" "extra field 1"
 - With -out-utf8, "Value" is outputted as UTF-8.
 - With -out, "Value" is outputted in ANSI codepage.
+- Without -out*, "Value" is outputted at the console (STDOUT).
 
 * Advanced get file attachment
 KeePassCommand.exe getattachment "KeePass-entry-title" "attachmentname" "attachmentname" ...
 e.g. KeePassCommand.exe getattachment "Sample Entry" "example_attachment.txt"
 - Attachment is outputted as binary, base64 encoded.
 
-* Advanced get file attachment raw into file
-KeePassCommand.exe getattachmentraw -out:outputfilename "KeePass-entry-title" "attachmentname"
-e.g. KeePassCommand.exe getattachmentraw -out:myfile.txt "Sample Entry" "example_attachment.txt"
-- Attachment is saved in outputfilename, outputted as binary.
+* Advanced get file attachment RAW
+KeePassCommand.exe getattachmentraw "KeePass-entry-title" "attachmentname"
+e.g. KeePassCommand.exe getattachmentraw "Sample Entry" "example_attachment.txt"
+- With -out, attachment is saved in outputfilename, outputted as binary.
+- Without -out*, attachment is outputted binary at the console (STDOUT).
 
 * Advanced get note
 KeePassCommand.exe getnote "KeePass-entry-title" "KeePass-entry-title" ...
 e.g. KeePassCommand.exe getnote "Sample Entry"
 - "Note" is outputted as UTF-8, base64 encoded.
 
-* Advanced get note into file
-KeePassCommand.exe getnoteraw <-out-utf8:outputfile or -out:> "KeePass-entry-title"
-e.g. KeePassCommand.exe getnoteraw -out-utf8:mynote.txt "Sample Entry"
+* Advanced get note RAW
+KeePassCommand.exe getnoteraw "KeePass-entry-title"
+e.g. KeePassCommand.exe getnoteraw "Sample Entry"
 - With -out-utf8, "Note" is outputted as UTF-8.
 - With -out, "Note" is outputted in ANSI codepage.
+- Without -out*, "Note" is outputted at the console (STDOUT).
 
 * Advanced list titles in group
 KeePassCommand.exe listgroup "KeePass-entry-title"
@@ -91,13 +96,14 @@ e.g. KeePassCommand.exe listgroup "All Entries"
 
 # Examples
 
-Examples are found in the github directory **example**.
+Examples are found in the github directory **[example](example)**.
 
 - example.kdbx is a KeePass database. It's master password is **example**.
 - [FromPhp.php](example/FromPhp.php) can be used to query the KeePass password store from PHP. With minimal modifications you can use it anywhere.
 - [FromBat.bat](example/FromBat.bat) can be used to query the KeePass password store from a BAT file. With minimal modifications you can use it anywhere.
 - [FromPowershell.ps1](example/FromPowershell.ps1) can be used to query the KeePass password store from PowerShell. With minimal modifications you can use it anywhere.
 - [FromPython.py](example/FromPython.py) can be used to query the KeePass password store from Python. With minimal modifications you can use it anywhere.
+- [FromLua.lua](example/FromLua.lua) can be used to query the KeePass password store from Lua. With minimal modifications you can use it anywhere.
 - [CsharpExample](example/CsharpExample/src/CsharpExample/Program.cs) can be used to query the KeePass password store from C#. With minimal modifications you can use it anywhere.
 
 # GIT
