@@ -29,17 +29,7 @@ namespace KeePassCommand.Command
                 output.AppendLine(title);
             }
 
-            if (!String.IsNullOrWhiteSpace(options.outfile))
-            {
-                using (StreamWriter file = new StreamWriter(options.outfile, false, options.outfile_encoding))
-                {
-                    file.Write(output.ToString());
-                }
-            }
-            else
-            {
-                Console.Write(output.ToString());
-            }
+            OutputUtils.OutputString(options, output);
         }
     }
 }

@@ -11,3 +11,10 @@
     md c:\incoming >nul 2>&1
     md c:\incoming\KeePass >nul 2>&1
     
+    if "%~2" == "" goto :eof
+
+:OverrideExpected    
+    set "KeePassCommand_TestBaseName1=%~nx2"
+    set "KeePassCommand_TestExpected=%~dp0..\Expectations\%KeePassCommand_TestBaseName1%.expected"
+    set KeePassCommand_TestBaseName1=
+    

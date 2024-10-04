@@ -39,8 +39,10 @@ namespace KeePassCommand
             sb.AppendLine("- When -namedpipe is specified, communication will be encrypted via a Named Pipe.");
             sb.AppendLine("- When -filesystem:folderpath is specified, communication will be via encrypted files inside shared folder folderpath. A special KeePass entry with title starting with \"KeePassCommander.FileSystem\", with folderpath as url, and notes like listgroup must be present for this to work. The purpose is querying from inside a Virtual Machine. See https://github.com/MircoBabin/KeePassCommander/docs/VirtualMachine.md for more information.");
 
-            sb.AppendLine("- Unless -out or -out-utf8 is used, output will be at the console (STDOUT).");
-            sb.AppendLine("- When -out-utf8:outputfile is used, output will be written in outputfile using UTF-8 codepage.");
+            sb.AppendLine("- Unless -out or -out-utf8 is used, output will be at the console (STDOUT) (without BOM).");
+            sb.AppendLine("- If -stdout-utf8 is used, output at the console (STDOUT) will always use UTF-8 codepage (with BOM).");
+            sb.AppendLine("- If -stdout-utf8nobom is used, output at the console (STDOUT) will always use UTF-8 codepage (without BOM).");
+            sb.AppendLine("- When -out-utf8:outputfile is used, output will be written in outputfile using UTF-8 codepage (with BOM).");
             sb.AppendLine("- When -out:outputfile is used, output will be written in outputfile using ANSI codepage.");
 
             sb.AppendLine("- \"KeePass-entry-title\" must exactly match (case sensitive), there is no fuzzy logic. All open databases in KeePass are searched.");
@@ -62,11 +64,13 @@ namespace KeePassCommand
 
             sb.AppendLine();
 
-            sb.AppendLine("* Advanced get string field raw into file");
-            sb.AppendLine("KeePassCommand.exe getfieldraw <-out-utf8:outputfile or -out:> \"KeePass-entry-title\" \"fieldname\"");
+            sb.AppendLine("* Advanced get string field RAW");
+            sb.AppendLine("KeePassCommand.exe getfieldraw \"KeePass-entry-title\" \"fieldname\"");
             sb.AppendLine("e.g. KeePassCommand.exe getfieldraw -out-utf8:myfield.txt \"Sample Entry\" \"extra field 1\"");
             sb.AppendLine("- With -out-utf8, \"Value\" is outputted as UTF-8.");
             sb.AppendLine("- With -out, \"Value\" is outputted in ANSI codepage.");
+            sb.AppendLine("- Without -out*, \"Value\" is outputted at the console (STDOUT).");
+
 
             sb.AppendLine();
 
@@ -77,10 +81,11 @@ namespace KeePassCommand
 
             sb.AppendLine();
 
-            sb.AppendLine("* Advanced get file attachment raw into file");
-            sb.AppendLine("KeePassCommand.exe getattachmentraw -out:outputfilename \"KeePass-entry-title\" \"attachmentname\"");
-            sb.AppendLine("e.g. KeePassCommand.exe getattachmentraw -out:myfile.txt \"Sample Entry\" \"example_attachment.txt\"");
-            sb.AppendLine("- Attachment is saved in outputfilename, outputted as binary.");
+            sb.AppendLine("* Advanced get file attachment RAW");
+            sb.AppendLine("KeePassCommand.exe getattachmentraw \"KeePass-entry-title\" \"attachmentname\"");
+            sb.AppendLine("e.g. KeePassCommand.exe getattachmentraw \"Sample Entry\" \"example_attachment.txt\"");
+            sb.AppendLine("- With -out, attachment is saved in outputfilename, outputted as binary.");
+            sb.AppendLine("- Without -out*, attachment is outputted binary at the console (STDOUT).");
 
             sb.AppendLine();
 
@@ -91,11 +96,12 @@ namespace KeePassCommand
 
             sb.AppendLine();
 
-            sb.AppendLine("* Advanced get note into file");
-            sb.AppendLine("KeePassCommand.exe getnoteraw <-out-utf8:outputfile or -out:> \"KeePass-entry-title\"");
-            sb.AppendLine("e.g. KeePassCommand.exe getnoteraw -out-utf8:mynote.txt \"Sample Entry\"");
+            sb.AppendLine("* Advanced get note RAW");
+            sb.AppendLine("KeePassCommand.exe getnoteraw \"KeePass-entry-title\"");
+            sb.AppendLine("e.g. KeePassCommand.exe getnoteraw \"Sample Entry\"");
             sb.AppendLine("- With -out-utf8, \"Note\" is outputted as UTF-8.");
             sb.AppendLine("- With -out, \"Note\" is outputted in ANSI codepage.");
+            sb.AppendLine("- Without -out*, \"Note\" is outputted at the console (STDOUT).");
 
             sb.AppendLine();
             sb.AppendLine("* Advanced list titles in group");
@@ -153,7 +159,7 @@ namespace KeePassCommand
                 else if (arg.Length > 10 && arg.Substring(0, 10).ToLower() == "-out-utf8:")
                 {
                     result.outfile = arg.Substring(10);
-                    result.outfile_encoding = Encoding.UTF8;
+                    result.outfile_encoding = Encoding.UTF8; // with BOM
                 }
                 else if (arg.Length > 12 && arg.Substring(0, 12).ToLower() == "-filesystem:")
                 {
@@ -163,9 +169,17 @@ namespace KeePassCommand
                         result.filesystem = filesystem;
                     }
                 }
-                else if (arg.Length > 10 && arg.Substring(0, 10).ToLower() == "-namedpipe")
+                else if (arg.Length == 10 && arg.Substring(0, 10).ToLower() == "-namedpipe")
                 {
                     result.namedpipe = true;
+                }
+                else if (arg.Length == 12 && arg.Substring(0, 12).ToLower() == "-stdout-utf8")
+                {
+                    result.stdout_encoding = ProgramArguments.StdoutEncodingType.Utf8;
+                }
+                else if (arg.Length == 17 && arg.Substring(0, 17).ToLower() == "-stdout-utf8nobom")
+                {
+                    result.stdout_encoding = ProgramArguments.StdoutEncodingType.Utf8WithoutBom;
                 }
                 else
                 {

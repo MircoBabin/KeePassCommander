@@ -38,6 +38,7 @@ goto:eof
 :runtest
     set /A COUNTER=COUNTER+1
     echo [%COUNTER%/%TOTAL%] %~1
+    chcp
     echo [start]
     
     set "testStartTime=%time: =0%"

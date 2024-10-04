@@ -47,6 +47,7 @@
     <Compile Include="Command\CommandListGroup.cs" />
     <Compile Include="Command\ICommand.cs" />
     <Compile Include="Command\Runner.cs" />
+    <Compile Include="OutputUtils.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="ProgramArguments.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

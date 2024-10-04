@@ -50,17 +50,7 @@ namespace KeePassCommand.Command
                 }
             }
 
-            if (!String.IsNullOrWhiteSpace(options.outfile))
-            {
-                using (StreamWriter file = new StreamWriter(options.outfile, false, options.outfile_encoding))
-                {
-                    file.Write(output.ToString());
-                }
-            }
-            else
-            {
-                Console.WriteLine(output.ToString());
-            }
+            OutputUtils.OutputString(options, output);
         }
     }
 }
