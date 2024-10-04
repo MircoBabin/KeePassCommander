@@ -3,7 +3,7 @@
 
 # KeePass Commander
 KeePass Commander is a plugin for the [KeePass password store](https://keepass.info/ "KeePass") program. 
-It is a command-line tool that provides a communication channel for PHP scripts, Windows CMD/BAT/PowerShell scripts, Python, C#, git, etc. to query the KeePass password store without requiring configuration or passwords.
+It is a command-line tool that provides a communication channel for PHP scripts, Windows CMD/BAT/PowerShell scripts, Python, C#, Lua, git, etc. to query the KeePass password store without requiring configuration or passwords.
 
 It can also query KeePass from within a [Virtual Machine](docs/VirtualMachine.md). Read the [documentation here](docs/VirtualMachine.md).
 
