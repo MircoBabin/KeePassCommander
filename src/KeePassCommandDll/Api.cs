@@ -221,5 +221,43 @@ namespace KeePassCommandDll
 
             return results;
         }
+
+        public static List<ApiListGroupResponse> listgroup(string KeePassEntryTitle)
+        {
+            StringBuilder command = new StringBuilder("listgroup\t");
+            command.Append(KeePassEntryTitle);
+            command.Append('\t');
+
+            _lastCommunicationVia = null;
+            var sender = new CommandSender(_communicateVia, _fileSystemDirectory);
+            var send = sender.Send(command.ToString());
+            _lastCommunicationVia = sender.CommunicationVia;
+
+            SortedDictionary<string, bool> unique = new SortedDictionary<string, bool>();
+            foreach (List<ResponseItem> entry in send.Response.Entries)
+            {
+                switch (send.Response.ResponseType)
+                {
+                    case Response.ResponseLayoutType.default_1_column:
+                        {
+                            string title = entry[0].Parts[0];
+                            if (!unique.ContainsKey(title))
+                                unique.Add(title, true);
+                        }
+                        break;
+                }
+            }
+
+            var result = new List<ApiListGroupResponse>();
+            foreach (string title in unique.Keys)
+            {
+                result.Add(new ApiListGroupResponse()
+                {
+                    Title = title,
+                });
+            }
+
+            return result;
+        }
     }
 }

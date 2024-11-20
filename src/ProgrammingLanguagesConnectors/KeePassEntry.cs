@@ -80,6 +80,13 @@ namespace KeePassCommand
         public byte[] Value { get; set; }
     }
 
+    public class KeePassListGroup
+    {
+        public List<string> Titles { get; set; }
+
+        public KeePassCommunicationVia CommunicationVia { get; set; }
+    }
+
     public class KeePassEntry
     {
         public string Title { get; set; }
@@ -196,6 +203,29 @@ namespace KeePassCommand
             return entry;
         }
 
+        public static KeePassListGroup listgroup(string title)
+        {
+            if (!InitializeCalled) throw new Exception("Call KeePassEntry.Initialize() first");
+
+            var listgroup = new KeePassListGroup();
+            listgroup.Titles = new List<string>();
+            listgroup.CommunicationVia = null;
+            {
+                var result = KeePassCommandDll_ApiListgroup.Invoke(null, new object[] { title });
+                listgroup.CommunicationVia = getLastCommunicationVia("listgroup");
+                if (result == null) return listgroup;
+
+                foreach (var item in (IEnumerable)result)
+                {
+                    Type ApiListGroupResponse = item.GetType();
+
+                    listgroup.Titles.Add(GetResultPropertyString(item, ApiListGroupResponse, "Title"));
+                }
+            }
+
+            return listgroup;
+        }
+
         protected static string GetResultPropertyEnumAsString(object obj, Type type, string propertyName)
         {
             PropertyInfo prop = type.GetProperty(propertyName);
@@ -232,6 +262,7 @@ namespace KeePassCommand
         protected static MethodInfo KeePassCommandDll_ApiGetfirst = null;
         protected static MethodInfo KeePassCommandDll_ApiGetfield = null;
         protected static MethodInfo KeePassCommandDll_ApiGetattachment = null;
+        protected static MethodInfo KeePassCommandDll_ApiListgroup = null;
         protected static MethodInfo KeePassCommandDll_ApiGetLastCommunicationVia = null;
 
         public static void Initialize(string KeePassCommandDllPath,
@@ -259,6 +290,9 @@ namespace KeePassCommand
 
             KeePassCommandDll_ApiGetattachment = KeePassCommandDll_Api.GetMethod("getattachment", new Type[] { typeof(string), typeof(string[]) });
             if (KeePassCommandDll_ApiGetattachment == null) throw new Exception("Error loading KeePassCommandDll.dll [KeePassCommandDll.Api.getattachment(string, string[]) method] from " + KeePassCommandDllPath);
+
+            KeePassCommandDll_ApiListgroup = KeePassCommandDll_Api.GetMethod("listgroup", new Type[] { typeof(string) });
+            if (KeePassCommandDll_ApiListgroup == null) throw new Exception("Error loading KeePassCommandDll.dll [KeePassCommandDll.Api.listgroup(string) method] from " + KeePassCommandDllPath);
 
             KeePassCommandDll_ApiGetLastCommunicationVia = KeePassCommandDll_Api.GetMethod("getLastCommunicationVia", new Type[] { });
             if (KeePassCommandDll_ApiGetLastCommunicationVia == null) throw new Exception("Error loading KeePassCommandDll.dll [KeePassCommandDll.Api.getLastCommunicationVia() method] from " + KeePassCommandDllPath);

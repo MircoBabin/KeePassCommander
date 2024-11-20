@@ -45,6 +45,7 @@
     <Compile Include="ApiGetAttachmentResponse.cs" />
     <Compile Include="ApiGetFieldResponse.cs" />
     <Compile Include="ApiGetResponse.cs" />
+    <Compile Include="ApiListGroupResponse.cs" />
     <Compile Include="Communication\ISendCommand.cs" />
     <Compile Include="Communication\LineReader.cs" />
     <Compile Include="Communication\CommandSender.cs" />
