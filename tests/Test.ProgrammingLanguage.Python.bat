@@ -8,7 +8,7 @@
     call "%~dp0Utils\Utils.test-setup.bat" "%~f0"
 
     set PYTHONIOENCODING=utf-8
-    set PYTHONPYCACHEPREFIX=%tmp
+    set PYTHONPYCACHEPREFIX=%tmp%
     set PYTHONDONTWRITEBYTECODE=1
     python "%~dp0Test.ProgrammingLanguage.Python.py" "%KeePassCommandExe%" > "%KeePassCommand_TestOutput%"
 
