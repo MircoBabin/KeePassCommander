@@ -4,6 +4,7 @@ set "totalStartTime=%time: =0%"
 
     set TOTAL=0
     set COUNTER=0
+    set FAILED=0
     if "%~1" == "" goto all
 
 :commandline    
@@ -33,6 +34,12 @@ set "totalEndTime=%time: =0%"
 echo [Total time]
 call :showelapsed "%totalStartTime%" "%totalEndTime%"
 
+echo.
+echo --------------------------------------------------------------------------
+echo %FAILED% tests failed.
+echo --------------------------------------------------------------------------
+echo.
+
 goto:eof
 
 :runtest
@@ -43,6 +50,7 @@ goto:eof
     
     set "testStartTime=%time: =0%"
     call "%~1"
+    if errorlevel 1 set /A FAILED=FAILED+1
     set "testEndTime=%time: =0%"
     
     echo [done] - there should be no output between [start] and [done]

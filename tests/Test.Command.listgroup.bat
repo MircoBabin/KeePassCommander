@@ -4,6 +4,8 @@
     
     "%KeePassCommandExe%" listgroup "All Entries" > "%KeePassCommand_TestOutput%"
     
+    set diffErrorlevel=0
     call "%~dp0Utils\Utils.diff.bat" "sort"
-    if errorlevel 1 exit /b 1
-    exit /b 0    
+    if errorlevel 1 set diffErrorlevel=1
+
+    exit /b %diffErrorlevel%
