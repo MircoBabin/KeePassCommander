@@ -27,6 +27,13 @@ namespace KeePassCommandDll.Communication
 
         public string ReadLine()
         {
+            // StreamReader.ReadLine() + StringReader.ReadLine():
+            //
+            // A line is defined as a sequence of characters followed by a line feed ("\n"),
+            // a carriage return ("\r"), or a carriage return immediately followed by a line feed ("\r\n").
+            // The string that is returned does not contain the terminating carriage return or line feed.
+            // The returned value is null if the end of the input stream is reached.
+
             if (_streamReader != null)
                 return _streamReader.ReadLine();
 
