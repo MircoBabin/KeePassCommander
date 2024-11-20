@@ -68,39 +68,47 @@ namespace KeePassCommander.ViaFileSystemServer
                         {
                             PwEntry entry = item as PwEntry;
 
-                            string title = Command.EntriesHelper.GetEntryField(Debug, KeePassHost, entry, PwDefs.TitleField);
-                            if (title.TrimStart().StartsWith("KeePassCommander.FileSystem"))
+                            // Skip entries in the Recycle Bin
+                            //
+                            // See Database Settings in KeePass
+                            // - Use a recycle bin
+                            // - Recycle bin group
+                            if (!db.RecycleBinEnabled || entry.ParentGroup == null || !entry.ParentGroup.Uuid.Equals(db.RecycleBinUuid))
                             {
-                                string directory = Path.GetFullPath(Command.EntriesHelper.GetEntryField(Debug, KeePassHost, entry, PwDefs.UrlField).Trim());
-                                if (Directory.Exists(directory))
+                                string title = Command.EntriesHelper.GetEntryField(Debug, KeePassHost, entry, PwDefs.TitleField);
+                                if (title.TrimStart().StartsWith("KeePassCommander.FileSystem"))
                                 {
-                                    Dictionary<string, List<PwEntry>> found = new Dictionary<string, List<PwEntry>>();
-                                    Command.EntriesHelper.ParseListGroupEntry(Debug, KeePassHost, entry, found);
-
-                                    if (Debug.Enabled)
+                                    string directory = Path.GetFullPath(Command.EntriesHelper.GetEntryField(Debug, KeePassHost, entry, PwDefs.UrlField).Trim());
+                                    if (Directory.Exists(directory))
                                     {
-                                        StringBuilder sb = new StringBuilder();
-                                        sb.AppendLine("ViaFileSystemServer - rescan entries - found title: " + title);
-                                        sb.AppendLine("    Directory: " + directory);
-                                        foreach (var keypair in found)
+                                        Dictionary<string, List<PwEntry>> found = new Dictionary<string, List<PwEntry>>();
+                                        Command.EntriesHelper.ParseListGroupEntry(Debug, KeePassHost, entry, found);
+
+                                        if (Debug.Enabled)
                                         {
-                                            sb.AppendLine("    Allowed Title: " + keypair.Key);
+                                            StringBuilder sb = new StringBuilder();
+                                            sb.AppendLine("ViaFileSystemServer - rescan entries - found title: " + title);
+                                            sb.AppendLine("    Directory: " + directory);
+                                            foreach (var keypair in found)
+                                            {
+                                                sb.AppendLine("    Allowed Title: " + keypair.Key);
+                                            }
+                                            Debug.OutputLine(sb.ToString());
                                         }
-                                        Debug.OutputLine(sb.ToString());
-                                    }
 
-                                    string key = directory.ToLowerInvariant();
-                                    if (!Watchers.ContainsKey(key))
-                                    {
-                                        var watcher = new DirectoryWatcher(directory, "*" + helloRequestSuffix, HandleFile);
-                                        watcher.AddAllowedTitles(found);
+                                        string key = directory.ToLowerInvariant();
+                                        if (!Watchers.ContainsKey(key))
+                                        {
+                                            var watcher = new DirectoryWatcher(directory, "*" + helloRequestSuffix, HandleFile);
+                                            watcher.AddAllowedTitles(found);
 
-                                        Watchers.Add(key, watcher);
-                                    }
-                                    else
-                                    {
-                                        var watcher = Watchers[key];
-                                        watcher.AddAllowedTitles(found);
+                                            Watchers.Add(key, watcher);
+                                        }
+                                        else
+                                        {
+                                            var watcher = Watchers[key];
+                                            watcher.AddAllowedTitles(found);
+                                        }
                                     }
                                 }
                             }

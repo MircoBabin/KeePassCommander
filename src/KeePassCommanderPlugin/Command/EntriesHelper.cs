@@ -92,11 +92,19 @@ namespace KeePassCommander.Command
                         {
                             PwEntry entry = item as PwEntry;
 
-                            string title = GetEntryField(Debug, KeePassHost, entry, PwDefs.TitleField);
-                            if (search.ContainsKey(title))
+                            // Skip entries in the Recycle Bin
+                            //
+                            // See Database Settings in KeePass
+                            // - Use a recycle bin
+                            // - Recycle bin group
+                            if (!db.RecycleBinEnabled || entry.ParentGroup == null || !entry.ParentGroup.Uuid.Equals(db.RecycleBinUuid))
                             {
-                                if (allowedTitles == null || (allowedTitles.ContainsKey(title) && allowedTitles[title]))
-                                    search[title].Add(entry);
+                                string title = GetEntryField(Debug, KeePassHost, entry, PwDefs.TitleField);
+                                if (search.ContainsKey(title))
+                                {
+                                    if (allowedTitles == null || (allowedTitles.ContainsKey(title) && allowedTitles[title]))
+                                        search[title].Add(entry);
+                                }
                             }
                         }
                     }
@@ -136,6 +144,12 @@ namespace KeePassCommander.Command
             }
 
             PwGroup group = groupEntry.ParentGroup;
+            if (group == null)
+            {
+                Debug.OutputLine("Ended FindTitlesInGroup, nothing to search - no parent group");
+                return;
+            }
+
             if (group.Entries != null)
             {
                 foreach (var entry in group.Entries)
