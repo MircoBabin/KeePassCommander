@@ -12,7 +12,7 @@ namespace KeePassCommander.Command
         {
             Debug.OutputLine("Starting command get");
 
-            output.AppendLine(Runner.BeginOfResponse + "[get][default-1-column]");
+            output.Append(Runner.BeginOfResponse + "[get][default-1-column]" + KeePassCommanderConsts.EOL);
 
             Dictionary<string, List<PwEntry>> titles = new Dictionary<string, List<PwEntry>>();
             {
@@ -54,15 +54,16 @@ namespace KeePassCommander.Command
                             catch { }
                         }
 
-                        output.AppendLine(EntriesHelper.GetEntryField(Debug, KeePassHost, entry, PwDefs.TitleField) + "\t" +
-                                          EntriesHelper.GetEntryField(Debug, KeePassHost, entry, PwDefs.UserNameField) + "\t" +
-                                          EntriesHelper.GetEntryField(Debug, KeePassHost, entry, PwDefs.PasswordField) + "\t" +
-                                          url + "\t" +
-                                          urlscheme + "\t" +
-                                          urlhost + "\t" +
-                                          urlport + "\t" +
-                                          urlpath + "\t" +
-                                          Convert.ToBase64String(Encoding.UTF8.GetBytes(EntriesHelper.GetEntryField(Debug, KeePassHost, entry, PwDefs.NotesField))) + "\t");
+                        output.Append(EntriesHelper.GetEntryField(Debug, KeePassHost, entry, PwDefs.TitleField) + "\t" +
+                                      EntriesHelper.GetEntryField(Debug, KeePassHost, entry, PwDefs.UserNameField) + "\t" +
+                                      EntriesHelper.GetEntryField(Debug, KeePassHost, entry, PwDefs.PasswordField) + "\t" +
+                                      url + "\t" +
+                                      urlscheme + "\t" +
+                                      urlhost + "\t" +
+                                      urlport + "\t" +
+                                      urlpath + "\t" +
+                                      Convert.ToBase64String(Encoding.UTF8.GetBytes(EntriesHelper.GetEntryField(Debug, KeePassHost, entry, PwDefs.NotesField))) + "\t" +
+                                      KeePassCommanderConsts.EOL);
                     }
                     catch (Exception ex)
                     {

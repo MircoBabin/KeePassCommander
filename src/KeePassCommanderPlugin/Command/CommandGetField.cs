@@ -12,7 +12,7 @@ namespace KeePassCommander.Command
         {
             Debug.OutputLine("Starting command getfield");
 
-            output.AppendLine(Runner.BeginOfResponse + "[getfield][default-2-column]");
+            output.Append(Runner.BeginOfResponse + "[getfield][default-2-column]" + KeePassCommanderConsts.EOL);
 
             Dictionary<string, List<PwEntry>> titles = new Dictionary<string, List<PwEntry>>();
             {
@@ -59,7 +59,7 @@ namespace KeePassCommander.Command
                         catch { }
                     }
 
-                    output.AppendLine();
+                    output.Append(KeePassCommanderConsts.EOL);
                 }
             }
 

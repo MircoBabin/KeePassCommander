@@ -11,7 +11,7 @@ namespace KeePassCommander.Command
         {
             Debug.OutputLine("Starting command listgroup");
 
-            output.AppendLine(Runner.BeginOfResponse + "[listgroup][default-1-column]");
+            output.Append(Runner.BeginOfResponse + "[listgroup][default-1-column]" + KeePassCommanderConsts.EOL);
 
             Dictionary<string, List<PwEntry>> titles = new Dictionary<string, List<PwEntry>>();
             {
@@ -44,7 +44,7 @@ namespace KeePassCommander.Command
                 {
                     output.Append(EntriesHelper.GetEntryField(Debug, KeePassHost, entry, PwDefs.TitleField));
                     output.Append("\t");
-                    output.AppendLine();
+                    output.Append(KeePassCommanderConsts.EOL);
                 }
             }
 

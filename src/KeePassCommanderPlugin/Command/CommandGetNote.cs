@@ -12,7 +12,7 @@ namespace KeePassCommander.Command
         {
             Debug.OutputLine("Starting command getnote");
 
-            output.AppendLine(Runner.BeginOfResponse + "[getnote][default-1-column]");
+            output.Append(Runner.BeginOfResponse + "[getnote][default-1-column]" + KeePassCommanderConsts.EOL);
 
             Dictionary<string, List<PwEntry>> titles = new Dictionary<string, List<PwEntry>>();
             {
@@ -40,7 +40,7 @@ namespace KeePassCommander.Command
                         output.Append("\t");
                     }
                     catch { }
-                    output.AppendLine();
+                    output.Append(KeePassCommanderConsts.EOL);
                 }
             }
 

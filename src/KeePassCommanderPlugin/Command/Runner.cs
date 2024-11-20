@@ -39,8 +39,8 @@ namespace KeePassCommander.Command
 
             if (command != null) command.Run(Debug, KeePassHost, parms, output, allowedTitles);
 
-            output.AppendLine();
-            output.AppendLine(EndOfResponse);
+            output.Append(KeePassCommanderConsts.EOL);
+            output.Append(EndOfResponse + KeePassCommanderConsts.EOL);
 
             return output;
         }
