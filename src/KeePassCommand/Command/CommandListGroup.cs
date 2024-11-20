@@ -1,7 +1,6 @@
 ﻿using KeePassCommandDll.Communication;
-using System;
+using KeePassCommander;
 using System.Collections.Generic;
-using System.IO;
 using System.Text;
 
 namespace KeePassCommand.Command
@@ -26,7 +25,7 @@ namespace KeePassCommand.Command
 
             foreach (string title in unique.Values)
             {
-                output.AppendLine(title);
+                output.Append(title + KeePassCommanderConsts.EOL);
             }
 
             OutputUtils.OutputString(options, output);

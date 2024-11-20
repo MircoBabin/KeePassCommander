@@ -1,7 +1,7 @@
 ﻿using KeePassCommandDll.Communication;
+using KeePassCommander;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Text;
 
 namespace KeePassCommand.Command
@@ -11,7 +11,7 @@ namespace KeePassCommand.Command
         public void Run(ProgramArguments options, ISendCommand send)
         {
             StringBuilder output = new StringBuilder();
-            output.AppendLine("SUCCESS");
+            output.Append("SUCCESS" + KeePassCommanderConsts.EOL);
 
             switch (send.Response.ResponseType)
             {
@@ -28,21 +28,21 @@ namespace KeePassCommand.Command
                 switch (send.Response.ResponseType)
                 {
                     case Response.ResponseLayoutType.default_1_column:
-                        output.AppendLine("B\t");
+                        output.Append("B\t" + KeePassCommanderConsts.EOL);
                         foreach (ResponseItem item in entry)
                         {
-                            output.AppendLine("I\t" + item.Parts[0]);
+                            output.Append("I\t" + item.Parts[0] + KeePassCommanderConsts.EOL);
                         }
-                        output.AppendLine("E\t");
+                        output.Append("E\t" + KeePassCommanderConsts.EOL);
                         break;
 
                     case Response.ResponseLayoutType.default_2_column:
-                        output.AppendLine("B\t");
+                        output.Append("B\t" + KeePassCommanderConsts.EOL);
                         foreach (ResponseItem item in entry)
                         {
-                            output.AppendLine("I\t" + item.Parts[0] + "\t" + item.Parts[1]);
+                            output.Append("I\t" + item.Parts[0] + "\t" + item.Parts[1] + KeePassCommanderConsts.EOL);
                         }
-                        output.AppendLine("E\t");
+                        output.Append("E\t" + KeePassCommanderConsts.EOL);
                         break;
 
                     default:

@@ -40,6 +40,9 @@
     <Compile Include="..\GlobalAssemblyInfo.cs">
       <Link>Properties\GlobalAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="..\KeePassCommanderConsts.cs">
+      <Link>KeePassCommanderConsts.cs</Link>
+    </Compile>
     <Compile Include="Command\CommandCommon.cs" />
     <Compile Include="Command\CommandGetAttachmentRaw.cs" />
     <Compile Include="Command\CommandGetFieldRaw.cs" />

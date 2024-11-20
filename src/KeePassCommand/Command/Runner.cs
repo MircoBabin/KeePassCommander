@@ -1,6 +1,6 @@
 ﻿using KeePassCommandDll.Communication;
+using KeePassCommander;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Text;
 
@@ -86,8 +86,8 @@ namespace KeePassCommand.Command
                 if (command != null && command is CommandCommon)
                 {
                     StringBuilder output = new StringBuilder();
-                    output.AppendLine("ERROR");
-                    output.AppendLine(ex.Message);
+                    output.Append("ERROR" + KeePassCommanderConsts.EOL);
+                    output.Append(ex.Message + KeePassCommanderConsts.EOL);
 
                     if (!String.IsNullOrWhiteSpace(options.outfile))
                     {
