@@ -18,8 +18,10 @@ function Example
 
     $object = KeePassEntry -title "Sample Entry" -options $options
     if ($object -eq $null) {
-        Write-Host "KeePass is not started"
-        Write-Host "Has KeePassCommander.dll been copied to the directory containing KeePass.exe ?"
+        Write-Host "Communication failed:"
+        Write-Host "- Is KeePass not started, locked or is the database not opened ?"
+        Write-Host "- Has KeePassCommander.dll been copied to the directory containing KeePass.exe ?"
+        Write-Host "- Is the entry not allowed to be queried (e.g. not permitted when using the filesystem) ?"
         return 2
     }
     

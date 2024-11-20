@@ -27,11 +27,10 @@
 
 # This file is put in the same directory as KeePassCommand.exe.
 
-function KeePassEntry
-{
+function KeePassEntry {
     param (
-        [Parameter(Mandatory=$true)][string]$title = "",
-        [Parameter(Mandatory=$false)]$options = $null
+        [Parameter(Mandatory = $true)][string]$title,
+        [Parameter(Mandatory = $false)]$options
     )
      
     New-Variable -Name 'entry_title'       -Value ''     -Scope Local -Option AllScope
@@ -48,22 +47,75 @@ function KeePassEntry
                                                             
     New-Variable -Name 'entry_attachments' -Value @()    -Scope Local -Option AllScope
     
+    function OSExecute_ReturnStdoutLines {
+        param (
+            [Parameter(Mandatory = $true)][string]$cmd,
+            [Parameter(Mandatory = $true)][array]$parmsList
+        )
+        
+        $arguments = ''
+        Foreach ($parm in $parmsList) {
+            $arguments = $arguments + ' "' + $parm + '"'
+        }
+
+        $procInfo = New-Object System.Diagnostics.ProcessStartInfo -Property @{
+            FileName               = $cmd
+            Arguments              = $arguments
+            RedirectStandardOutput = $true
+            UseShellExecute        = $false
+        }
+        
+        $proc = New-Object System.Diagnostics.Process
+        $proc.StartInfo = $procInfo
+        try {
+            $proc.Start() | Out-Null
+        }
+        catch {
+            throw "Error starting: " + $cmd + " " + $arguments
+        }
+        $proc.WaitForExit()        
+
+        $stream = $proc.StandardOutput.BaseStream;
+        $output = [byte[]]::new(0)
+        $buffer = [byte[]]::new(4096)
+        while ($true) {
+            $bytesRead = $stream.Read($buffer, 0, $buffer.length)
+            if ($bytesRead -eq 0) {
+                break
+            }
+            
+            $tmp = [byte[]]::new($output.Length + $bytesRead)
+            [System.Array]::Copy($output, 0, $tmp, 0             , $output.Length)
+            [System.Array]::Copy($buffer, 0, $tmp, $output.Length, $bytesRead    )
+            $output = $tmp
+        }
+                
+        $output = [System.Text.Encoding]::UTF8.GetString($output)
+        if ($output.Length -eq 0) {
+            return @();
+        }
+        
+        if ($output.EndsWith("`r`n")) {
+            $output = $output.Substring(0, $output.Length - 2)
+        }
+        
+        return $output.Split("`r`n")
+    }
+        
+    
     function Get {
         param (
-            [Parameter(Mandatory=$true)][string]$KeePassCommandExe = "",
-            [Parameter(Mandatory=$true)][string]$title = ""
+            [Parameter(Mandatory = $true)][string]$KeePassCommandExe,
+            [Parameter(Mandatory = $true)][string]$title
         )
-    
-        $lines = & $KeePassCommandExe @('get', $title)
         
+        $outputLines = OSExecute_ReturnStdoutLines -cmd $KeePassCommandExe -parmsList @('get', '-stdout-utf8nobom', $title)
+
         $titleFound = $false
         $state = 0
-        Foreach ($line in $lines)
-        {
-            if ($line.length -ge 2)
-            {
-                switch($state)
-                {
+        Foreach ($line in $outputLines) {
+            if ($line.length -ge 2) {
+                switch ($state) {
                     0 {
                         if ($line.Substring(0, 2) -eq "B`t") {
                             $state = 1
@@ -72,16 +124,16 @@ function KeePassEntry
                     
                     Default {
                         if ($line.Substring(0, 2) -eq "I`t") {
-                            $value = $line.Substring(2).Replace("`r","").Replace("`n","")
+                            $value = $line.Substring(2)
 
-                            switch($state)
-                            {
+                            switch ($state) {
                                 1 {
                                     if ($value -eq $title) {
                                         $entry_title = $value
                                         $titleFound = $true
                                         $state++
-                                    } else {
+                                    }
+                                    else {
                                         $state = 0
                                     }
                                 }
@@ -120,7 +172,8 @@ function KeePassEntry
                                     $state++
                                 }
                             }
-                        } elseif ($line.Substring(0, 2) -eq "E`t") {
+                        }
+                        elseif ($line.Substring(0, 2) -eq "E`t") {
                             $state = 0
                             if ($titleFound) { break }
                         }
@@ -132,20 +185,17 @@ function KeePassEntry
     
     function GetField {
         param (
-            [Parameter(Mandatory=$true)][string]$KeePassCommandExe = "",
-            [Parameter(Mandatory=$true)]$fieldNames = @()
+            [Parameter(Mandatory = $true)][string]$KeePassCommandExe,
+            [Parameter(Mandatory = $true)]$fieldNames
         )
         
-        $lines = & $KeePassCommandExe (@('getfield', $title) + $fieldNames)
+        $outputLines = OSExecute_ReturnStdoutLines -cmd $KeePassCommandExe -parmsList (@('getfield', '-stdout-utf8nobom', $title) + $fieldNames)
         
         $titleFound = $false
         $state = 0
-        Foreach ($line in $lines)
-        {
-            if ($line.length -ge 2)
-            {
-                switch($state)
-                {
+        Foreach ($line in $outputLines) {
+            if ($line.length -ge 2) {
+                switch ($state) {
                     0 {
                         if ($line.Substring(0, 2) -eq "B`t") {
                             $state = 1
@@ -155,24 +205,25 @@ function KeePassEntry
                     Default {
                         if ($line.Substring(0, 2) -eq "I`t") {
                             $name = ''
-                            $value = $line.Substring(2).Replace("`r","").Replace("`n","")
+                            $value = $line.Substring(2)
                             $p = $value.IndexOf("`t")
                             if ($p -ge 0) {
                                 $name = $value.Substring(0, $p)
                                 $value = $value.Substring($p + 1)
-                            } else {
+                            }
+                            else {
                                 $name = ''
                                 $value = ''
                             }
 
-                            switch($state)
-                            {
+                            switch ($state) {
                                 1 {
                                     if ($name -eq 'title' -And $value -eq $title) {
                                         $entry_title = $value
                                         $titleFound = $true
                                         $state++
-                                    } else {
+                                    }
+                                    else {
                                         $state = 0
                                     }
                                 }
@@ -183,13 +234,14 @@ function KeePassEntry
                                         } 
                                         
                                         $entry_fields += [pscustomobject]@{
-                                            name = $name
+                                            name  = $name
                                             value = $value
                                         }
                                     }
                                 }
                             }
-                        } elseif ($line.Substring(0, 2) -eq "E`t") {
+                        }
+                        elseif ($line.Substring(0, 2) -eq "E`t") {
                             $state = 0
                             if ($titleFound) { break }
                         }
@@ -201,20 +253,17 @@ function KeePassEntry
 
     function GetAttachment {
         param (
-            [Parameter(Mandatory=$true)][string]$KeePassCommandExe = "",
-            [Parameter(Mandatory=$true)]$attachmentNames = @()
+            [Parameter(Mandatory = $true)][string]$KeePassCommandExe,
+            [Parameter(Mandatory = $true)]$attachmentNames
         )
         
-        $lines = & $KeePassCommandExe (@('getattachment', $title) + $attachmentNames)
+        $outputLines = OSExecute_ReturnStdoutLines -cmd $KeePassCommandExe -parmsList (@('getattachment', '-stdout-utf8nobom', $title) + $attachmentNames)
         
         $titleFound = $false
         $state = 0
-        Foreach ($line in $lines)
-        {
-            if ($line.length -ge 2)
-            {
-                switch($state)
-                {
+        Foreach ($line in $outputLines) {
+            if ($line.length -ge 2) {
+                switch ($state) {
                     0 {
                         if ($line.Substring(0, 2) -eq "B`t") {
                             $state = 1
@@ -224,24 +273,25 @@ function KeePassEntry
                     Default {
                         if ($line.Substring(0, 2) -eq "I`t") {
                             $name = ''
-                            $value = $line.Substring(2).Replace("`r","").Replace("`n","")
+                            $value = $line.Substring(2)
                             $p = $value.IndexOf("`t")
                             if ($p -ge 0) {
                                 $name = $value.Substring(0, $p)
                                 $value = $value.Substring($p + 1)
-                            } else {
+                            }
+                            else {
                                 $name = ''
                                 $value = ''
                             }
 
-                            switch($state)
-                            {
+                            switch ($state) {
                                 1 {
                                     if ($name -eq 'title' -And $value -eq $title) {
                                         $entry_title = $value
                                         $titleFound = $true
                                         $state++
-                                    } else {
+                                    }
+                                    else {
                                         $state = 0
                                     }
                                 }
@@ -252,13 +302,14 @@ function KeePassEntry
                                         } 
                                         
                                         $entry_attachments += [pscustomobject]@{
-                                            name = $name
+                                            name  = $name
                                             value = $value
                                         }
                                     }
                                 }
                             }
-                        } elseif ($line.Substring(0, 2) -eq "E`t") {
+                        }
+                        elseif ($line.Substring(0, 2) -eq "E`t") {
                             $state = 0
                             if ($titleFound) { break }
                         }
@@ -310,17 +361,17 @@ function KeePassEntry
     }
     
     return [pscustomobject]@{
-        title = $entry_title
-        username = $entry_username
-        password = $entry_password
-        url = $entry_url
-        urlscheme = $entry_urlscheme
-        urlhost = $entry_urlhost
-        urlport = $entry_urlport
-        urlpath = $entry_urlpath
-        notes = $entry_notes
+        title       = $entry_title
+        username    = $entry_username
+        password    = $entry_password
+        url         = $entry_url
+        urlscheme   = $entry_urlscheme
+        urlhost     = $entry_urlhost
+        urlport     = $entry_urlport
+        urlpath     = $entry_urlpath
+        notes       = $entry_notes
         
-        fields = $entry_fields
+        fields      = $entry_fields
         
         attachments = $entry_attachments
     }
