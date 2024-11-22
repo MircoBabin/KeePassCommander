@@ -29,17 +29,50 @@ OTHER DEALINGS IN THE SOFTWARE.
 local KeePassEntry = {}
 
 do
-    -- Private Scope because of "do"
-    local function RunKeePassCommand(KeePassCommandExe, command, EntryName, parameters)
-        local cmd = '"'..KeePassCommandExe..'" "-stdout-utf8nobom" "'..command..'" "'..EntryName..'"'
+    local function OSExecute_ReturnStdoutLines(cmd, parameters)
+        local cmdLine = '"'..cmd..'"'
 
+        local parameterNo
         for parameterNo = 1, #parameters do
-            cmd = cmd.." \""..parameters[parameterNo].."\""
+            cmdLine = cmdLine.." \""..parameters[parameterNo].."\""
         end
 
-        local handle = io.popen('"'..cmd..'"', "r") -- On Windows, you must enclose your command line (program + arguments) in additional outer-level quotes.
-        local result = handle:read("*a")
+        -- On Windows, io.popen does not support binary mode "rb".
+        -- On Windows, io.popen's commandline (program + arguments) must be enclosed in additional outer-level quotes.
+        local handle = io.popen('"'..cmdLine..'"', "r")
+        local output = handle:read("*all")
         handle:close()
+
+        --  Because of using "r" (text) mode for io.popen, the "\r\n" line endings are normalized by io.popen to "\n".
+        local lineEnding = "\n"
+
+        if (string.len(output) == 0) then
+            return {}
+        end
+
+        if (string.sub(output, -string.len(lineEnding)) == lineEnding) then
+            output = string.sub(output, 0, -string.len(lineEnding))
+        end
+
+        local result = {}
+        local lineBegin = 1
+        local lineEnd = 0
+        while true do
+            if lineBegin > string.len(output) then break end
+
+            lineEnd = string.find(output, lineEnding, lineBegin)
+            if lineEnd == nil then
+                lineEnd = string.len(output) + 1
+            end
+
+            if lineEnd-1 >= lineBegin then
+                table.insert(result, string.sub(output, lineBegin, lineEnd-1))
+            else
+                table.insert(result, string.sub(output, ''))
+            end
+
+            lineBegin = lineEnd + string.len(lineEnding)
+        end
 
         return result;
     end
@@ -76,6 +109,10 @@ do
         end))
     end
 
+    local function RunKeePassCommand_ListGroup(KeePassCommandExe, EntryName)
+        return OSExecute_ReturnStdoutLines(KeePassCommandExe, { "listgroup", "-stdout-utf8nobom", EntryName })
+    end
+
     local function RunKeePassCommand_Get(KeePassCommandExe, EntryName)
         local result = {}
         result.title = ""
@@ -90,23 +127,14 @@ do
         result.fields = {}
         result.attachments = {}
 
-        local output = RunKeePassCommand(KeePassCommandExe, "get", EntryName, {})
+        local outputLines = OSExecute_ReturnStdoutLines(KeePassCommandExe, { "get", "-stdout-utf8nobom", EntryName })
 
-        local lineBegin = 1
-        local lineEnd = 0
-        local line
+        local lineNo
         local state = 0;
         local titleFound = false
-        while true do
-            lineBegin = lineEnd + 1
-            if lineBegin > string.len(output) then break end
+        for lineNo = 1, #outputLines do
+            local line = outputLines[lineNo]
 
-            lineEnd = string.find(output, "\n", lineBegin)
-            if lineEnd == nil then
-                lineEnd = string.len(output) + 1
-            end
-
-            line = string.sub(output, lineBegin, lineEnd-1)
             if string.len(line) >= 2 then
                 local twoChars = string.sub(line, 1, 2)
                 if state == 0 then
@@ -168,26 +196,14 @@ do
     local function RunKeePassCommand_GetField(KeePassCommandExe, EntryName, fieldnames)
         local result = {}
 
-        local output = RunKeePassCommand(KeePassCommandExe, "getfield", EntryName, fieldnames)
+        local outputLines = OSExecute_ReturnStdoutLines(KeePassCommandExe, { "getfield", "-stdout-utf8nobom", EntryName, table.unpack(fieldnames) })
 
-        local lineBegin = 1
-        local lineEnd = 0
-        local line
+        local lineNo
         local state = 0;
         local titleFound = false
-        local pos
-        local fieldname
-        local fieldvalue
-        while true do
-            lineBegin = lineEnd + 1
-            if lineBegin > string.len(output) then break end
+        for lineNo = 1, #outputLines do
+            local line = outputLines[lineNo]
 
-            lineEnd = string.find(output, "\n", lineBegin)
-            if lineEnd == nil then
-                lineEnd = string.len(output) + 1
-            end
-
-            line = string.sub(output, lineBegin, lineEnd-1)
             if string.len(line) >= 2 then
                 local twoChars = string.sub(line, 1, 2)
                 if state == 0 then
@@ -198,7 +214,10 @@ do
                     local value = string.sub(line, 3)
 
                     if twoChars == "I\t" then
-                        pos = string.find(value, "\t");
+                        local fieldname
+                        local fieldvalue
+
+                        local pos = string.find(value, "\t");
                         if pos ~= nil then
                             fieldname = string.sub(value, 1, pos-1)
                             fieldvalue = string.sub(value, pos+1)
@@ -235,26 +254,14 @@ do
     local function RunKeePassCommand_GetAttachment(KeePassCommandExe, EntryName, attachmentnames)
         local result = {}
 
-        local output = RunKeePassCommand(KeePassCommandExe, "getattachment", EntryName, attachmentnames)
+        local outputLines = OSExecute_ReturnStdoutLines(KeePassCommandExe, { "getattachment", "-stdout-utf8nobom", EntryName, table.unpack(attachmentnames) })
 
-        local lineBegin = 1
-        local lineEnd = 0
-        local line
+        local lineNo
         local state = 0;
         local titleFound = false
-        local pos
-        local fieldname
-        local fieldvalue
-        while true do
-            lineBegin = lineEnd + 1
-            if lineBegin > string.len(output) then break end
+        for lineNo = 1, #outputLines do
+            local line = outputLines[lineNo]
 
-            lineEnd = string.find(output, "\n", lineBegin)
-            if lineEnd == nil then
-                lineEnd = string.len(output) + 1
-            end
-
-            line = string.sub(output, lineBegin, lineEnd-1)
             if string.len(line) >= 2 then
                 local twoChars = string.sub(line, 1, 2)
                 if state == 0 then
@@ -263,9 +270,11 @@ do
                     end
                 else
                     local value = string.sub(line, 3)
-
                     if twoChars == "I\t" then
-                        pos = string.find(value, "\t");
+                        local fieldname
+                        local fieldvalue
+
+                        local pos = string.find(value, "\t");
                         if pos ~= nil then
                             fieldname = string.sub(value, 1, pos-1)
                             fieldvalue = string.sub(value, pos+1)
@@ -328,6 +337,21 @@ do
         result.attachments = RunKeePassCommand_GetAttachment(KeePassCommandExe, EntryName, attachmentnames)
 
         return result
+    end
+
+    function KeePassEntry.ListGroup(EntryName, Options)
+        local KeePassCommandExe = nil -- Lua has no concept in which directory this module (KeePassEntry.lua) is located.
+
+        local value = Options.KeePassCommandExe
+        if value ~= nil then
+            KeePassCommandExe = value
+        end
+
+        if not file_exists(KeePassCommandExe) then
+            error("KeePassCommand.exe not found: "..KeePassCommandExe)
+        end
+
+        return RunKeePassCommand_ListGroup(KeePassCommandExe, EntryName)
     end
 end
 
