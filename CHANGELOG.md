@@ -1,5 +1,13 @@
 # KeePassCommander changelog
 
+## Version 4.5
+Release date: 22 november 2024
+
+* add: skip entries in the Recycle Bin.
+* add: ListGroup() for C#.
+* fix: Lua, Php, Powershell, Python language connectors.
+* fix: tests
+
 ## Version 4.4
 Release date: 4 oktober 2024
 
