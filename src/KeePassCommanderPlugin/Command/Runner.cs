@@ -35,6 +35,8 @@ namespace KeePassCommander.Command
                     command = new CommandGetNote();
                 else if (parms[0] == "listgroup")
                     command = new CommandListGroup();
+                else if (parms[0] == "sign-using-buildstamp")
+                    command = new CommandSignUsingBuildstamp();
             }
 
             if (command != null) command.Run(Debug, KeePassHost, parms, output, allowedTitles);

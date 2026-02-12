@@ -87,6 +87,14 @@ namespace KeePassCommand
         public KeePassCommunicationVia CommunicationVia { get; set; }
     }
 
+    public class KeePassSignUsingBuildstampOnKeePassHost
+    {
+        public int ExitCode { get; set; }
+        public string StdOut { get; set; }
+        public string StdErr { get; set; }
+        public byte[] SignedBytes { get; set; }
+    }
+
     public class KeePassEntry
     {
         public string Title { get; set; }
@@ -226,6 +234,24 @@ namespace KeePassCommand
             return listgroup;
         }
 
+        public static KeePassSignUsingBuildstampOnKeePassHost signUsingBuildstampOnKeePassHost(string title, string filenameToCodeSign)
+        {
+            if (!InitializeCalled) throw new Exception("Call KeePassEntry.Initialize() first");
+
+            var result = KeePassCommandDll_ApiSignUsingBuildstampOnKeePassHost.Invoke(null, new object[] { title, filenameToCodeSign });
+            if (result == null) return null;
+
+            Type ApiSignUsingBuildstampOnKeePassHostResponse = result.GetType();
+
+            return new KeePassSignUsingBuildstampOnKeePassHost()
+            {
+                ExitCode = GetResultPropertyInt32(result, ApiSignUsingBuildstampOnKeePassHostResponse, "ExitCode"),
+                StdOut = GetResultPropertyString(result, ApiSignUsingBuildstampOnKeePassHostResponse, "StdOut"),
+                StdErr = GetResultPropertyString(result, ApiSignUsingBuildstampOnKeePassHostResponse, "StdErr"),
+                SignedBytes = GetResultPropertyBytes(result, ApiSignUsingBuildstampOnKeePassHostResponse, "SignedBytes"),
+            };
+        }
+
         protected static string GetResultPropertyEnumAsString(object obj, Type type, string propertyName)
         {
             PropertyInfo prop = type.GetProperty(propertyName);
@@ -246,6 +272,15 @@ namespace KeePassCommand
             return (string)prop.GetValue(obj, null);
         }
 
+        protected static Int32 GetResultPropertyInt32(object obj, Type type, string propertyName)
+        {
+            PropertyInfo prop = type.GetProperty(propertyName);
+            if (prop == null)
+                throw new Exception("Can't convert null to Int32.");
+
+            return (Int32)prop.GetValue(obj, null);
+        }
+
         protected static byte[] GetResultPropertyBytes(object obj, Type type, string propertyName)
         {
             PropertyInfo prop = type.GetProperty(propertyName);
@@ -263,6 +298,7 @@ namespace KeePassCommand
         protected static MethodInfo KeePassCommandDll_ApiGetfield = null;
         protected static MethodInfo KeePassCommandDll_ApiGetattachment = null;
         protected static MethodInfo KeePassCommandDll_ApiListgroup = null;
+        protected static MethodInfo KeePassCommandDll_ApiSignUsingBuildstampOnKeePassHost = null;
         protected static MethodInfo KeePassCommandDll_ApiGetLastCommunicationVia = null;
 
         public static void Initialize(string KeePassCommandDllPath,
@@ -293,6 +329,9 @@ namespace KeePassCommand
 
             KeePassCommandDll_ApiListgroup = KeePassCommandDll_Api.GetMethod("listgroup", new Type[] { typeof(string) });
             if (KeePassCommandDll_ApiListgroup == null) throw new Exception("Error loading KeePassCommandDll.dll [KeePassCommandDll.Api.listgroup(string) method] from " + KeePassCommandDllPath);
+
+            KeePassCommandDll_ApiSignUsingBuildstampOnKeePassHost = KeePassCommandDll_Api.GetMethod("signUsingBuildstampOnKeePassHost", new Type[] { typeof(string), typeof(string) });
+            if (KeePassCommandDll_ApiSignUsingBuildstampOnKeePassHost == null) throw new Exception("Error loading KeePassCommandDll.dll [KeePassCommandDll.Api.signUsingBuildstampOnKeePassHost(string, string) method] from " + KeePassCommandDllPath);
 
             KeePassCommandDll_ApiGetLastCommunicationVia = KeePassCommandDll_Api.GetMethod("getLastCommunicationVia", new Type[] { });
             if (KeePassCommandDll_ApiGetLastCommunicationVia == null) throw new Exception("Error loading KeePassCommandDll.dll [KeePassCommandDll.Api.getLastCommunicationVia() method] from " + KeePassCommandDllPath);

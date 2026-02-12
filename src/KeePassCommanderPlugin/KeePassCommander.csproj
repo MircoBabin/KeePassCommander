@@ -48,6 +48,7 @@
     <Compile Include="..\KeePassCommanderConsts.cs">
       <Link>KeePassCommanderConsts.cs</Link>
     </Compile>
+    <Compile Include="Command\CommandSignUsingBuildstamp.cs" />
     <Compile Include="Command\Runner.cs" />
     <Compile Include="Command\CommandGetAttachment.cs" />
     <Compile Include="Command\CommandListGroup.cs" />
@@ -55,6 +56,8 @@
     <Compile Include="Command\CommandGetField.cs" />
     <Compile Include="Command\CommandGet.cs" />
     <Compile Include="Command\ICommand.cs" />
+    <Compile Include="ConsoleExecutor\ConsoleExecutor.cs" />
+    <Compile Include="ConsoleExecutor\ConsoleSendInput.cs" />
     <Compile Include="DebugLog.cs" />
     <Compile Include="Command\EntriesHelper.cs" />
     <Compile Include="KeePassCommanderExt.cs" />

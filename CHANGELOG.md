@@ -1,5 +1,11 @@
 # KeePassCommander changelog
 
+## Version 4.6
+Release date: 12 february 2026
+
+* add: sign-using-buildstamp, to digitally code sign an executable using [buildstamp](https://github.com/MircoBabin/BuildStamp)
+* add: C# Api function signUsingBuildstampOnKeePassHost()
+
 ## Version 4.5
 Release date: 22 november 2024
 

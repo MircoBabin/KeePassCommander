@@ -114,6 +114,17 @@ namespace KeePassCommand
             sb.AppendLine("- There is no SUCCESS or ERROR indication in the output.");
 
             sb.AppendLine();
+            sb.AppendLine("* sign using buildstamp ( https://github.com/MircoBabin/BuildStamp )");
+            sb.AppendLine("KeePassCommand.exe sign-using-buildstamp \"KeePass-entry-title\" \"filename\"");
+            sb.AppendLine("e.g. KeePassCommand.exe sign-using-buildstamp \"SafeNet Token\" \"c:\\my-project\\bin\\release\\my-executable.exe\"");
+            sb.AppendLine("- The queried entry must contain the advanced field \"buildstamp-exe\" pointing to buildstamp.exe on the host running KeePass.");
+            sb.AppendLine("- The advanced field \"buildstamp-exe[...lowercase computername of KeePass host...]\" is preferred.");
+            sb.AppendLine("- The advanced field \"--signtool-exe[...lowercase computername of KeePass host...]\" is preferred.");
+            sb.AppendLine("- The advanced field \"--pkcs11-driver[...lowercase computername of KeePass host...]\" is preferred.");
+            sb.AppendLine("- The exitcode is the exitcode of buildstamp.exe. Exitcode will be 99 if buildstamp.exe is not startable.");
+            sb.AppendLine("- Output will be the stdout output followed by the stderr output of buildstamp.exe.");
+
+            sb.AppendLine();
             sb.AppendLine("--- LICENSE ---");
             sb.AppendLine("KeePass Commander");
             sb.AppendLine("MIT license");
@@ -229,10 +240,12 @@ namespace KeePassCommand
 
                 var runner = new Command.Runner();
                 runner.Run(options);
+                Environment.Exit(runner.ExitCode);
             }
             catch (Exception ex)
             {
                 Console.Error.WriteLine(ex.Message);
+                Environment.Exit(99);
             }
         }
     }

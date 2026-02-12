@@ -1,6 +1,7 @@
 ﻿using KeePassCommandDll.Communication;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
 
 namespace KeePassCommandDll
@@ -255,6 +256,81 @@ namespace KeePassCommandDll
                 {
                     Title = title,
                 });
+            }
+
+            return result;
+        }
+
+        public static ApiSignUsingBuildstampOnKeePassHostResponse signUsingBuildstampOnKeePassHost(string KeePassEntryTitle, string filenameToCodeSign)
+        {
+            StringBuilder command = new StringBuilder("sign-using-buildstamp\t");
+            command.Append(KeePassEntryTitle);
+            command.Append('\t');
+
+            if (!File.Exists(filenameToCodeSign))
+                throw new Exception("sign-using-buildstamp: file \"" + filenameToCodeSign + "\" does not exist.");
+            string filenameOnly = Path.GetFileName(filenameToCodeSign);
+
+            command.Append(Convert.ToBase64String(Encoding.UTF8.GetBytes(filenameOnly)));
+            command.Append('\t');
+            command.Append(Convert.ToBase64String(File.ReadAllBytes(filenameToCodeSign)));
+            command.Append('\t');
+
+            _lastCommunicationVia = null;
+            var sender = new CommandSender(_communicateVia, _fileSystemDirectory);
+            var send = sender.Send(command.ToString());
+            _lastCommunicationVia = sender.CommunicationVia;
+
+            ApiSignUsingBuildstampOnKeePassHostResponse result = new ApiSignUsingBuildstampOnKeePassHostResponse()
+            {
+                ExitCode = 99,
+                StdOut = null,
+                StdErr = null,
+                SignedBytes = null,
+            };
+            foreach (var entry in send.Response.Entries)
+            {
+                switch (send.Response.ResponseType)
+                {
+                    case Response.ResponseLayoutType.default_2_column:
+                        int no = 0;
+                        foreach (ResponseItem item in entry)
+                        {
+                            switch (no)
+                            {
+                                case 0: //exitcode value
+                                    if (item.Parts[0] != "exitcode")
+                                        throw new Exception("sign-using-buildstamp response failure, expected row 0 \"exitcode\".");
+                                    result.ExitCode = Convert.ToInt32(item.Parts[1]);
+                                    break;
+
+                                case 1: //stdout value
+                                    if (item.Parts[0] != "stdout")
+                                        throw new Exception("sign-using-buildstamp response failure, expected row 1 \"stdout\".");
+                                    result.StdOut = Encoding.UTF8.GetString(Convert.FromBase64String(item.Parts[1]));
+                                    break;
+
+                                case 2: //stderr value
+                                    if (item.Parts[0] != "stderr")
+                                        throw new Exception("sign-using-buildstamp response failure, expected row 2 \"stderr\".");
+                                    result.StdErr = Encoding.UTF8.GetString(Convert.FromBase64String(item.Parts[1]));
+                                    break;
+
+                                case 3: //filenameOnly signedBytes
+                                    if (result.ExitCode == 0)
+                                    {
+                                        string responseFilenameOnly = Encoding.UTF8.GetString(Convert.FromBase64String(item.Parts[0]));
+                                        if (responseFilenameOnly != filenameOnly)
+                                            throw new Exception("sign-using-buildstamp response failure, expected row 3 \"" + filenameOnly + "\".");
+                                        result.SignedBytes = Convert.FromBase64String(item.Parts[1]);
+                                    }
+                                    break;
+                            }
+
+                            no++;
+                        }
+                        break;
+                }
             }
 
             return result;

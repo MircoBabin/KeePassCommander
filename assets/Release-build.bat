@@ -48,6 +48,7 @@ set files=%files% "%~dp0..\bin\Release\KeePassEntry.php"
 set files=%files% "%~dp0..\bin\Release\KeePassEntry.ps1"
 set files=%files% "%~dp0..\bin\Release\KeePassEntry.py"
 set files=%files% "%~dp0..\bin\Release\KeePassEntry.lua"
+set files=%files% "%~dp0..\bin\Release\KeePassEntry.cs"
 
 "%sz_exe%" a -tzip -mx7 "Release\KeePassCommander-%KeepassCommandReleaseVersion%.zip" %files%
 "%sz_exe%" a -tzip -mx7 "Release\KeePassCommander-%KeepassCommandReleaseVersion%-debugpack.zip" "%~dp0..\bin"

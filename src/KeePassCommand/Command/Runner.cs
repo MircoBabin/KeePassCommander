@@ -8,12 +8,20 @@ namespace KeePassCommand.Command
 {
     public class Runner
     {
+        public int ExitCode { get; private set; }
+
+        public Runner()
+        {
+            ExitCode = 99;
+        }
+
         public void Run(ProgramArguments options)
         {
             ICommand command = null;
             try
             {
                 StringBuilder sendCommand = new StringBuilder();
+                bool appendRemainingArgs = true;
                 {
                     if (options.outcommand == "get")
                     {
@@ -55,17 +63,44 @@ namespace KeePassCommand.Command
                         command = new CommandListGroup();
                         sendCommand.Append("listgroup");
                     }
+                    else if (options.outcommand == "sign-using-buildstamp")
+                    {
+                        appendRemainingArgs = false;
+
+                        if (options.outargs.Count != 2)
+                            throw new Exception("sign-using-buildstamp expects 2 parameters, the KeePass-entry-title and the filename to sign.");
+                        string title = options.outargs[0];
+                        string filename = options.outargs[1];
+                        if (!File.Exists(filename))
+                            throw new Exception("sign-using-buildstamp: file \"" + filename + "\" does not exist.");
+                        string filenameOnly = Path.GetFileName(filename);
+
+                        command = new CommandSignUsingBuildstamp(filename, filenameOnly);
+                        sendCommand.Append("sign-using-buildstamp");
+                        sendCommand.Append('\t');
+                        sendCommand.Append(title);
+                        sendCommand.Append('\t');
+
+                        sendCommand.Append(Convert.ToBase64String(Encoding.UTF8.GetBytes(filenameOnly)));
+                        sendCommand.Append('\t');
+                        sendCommand.Append(Convert.ToBase64String(File.ReadAllBytes(filename)));
+                        sendCommand.Append('\t');
+                    }
                     else
                     {
                         command = new CommandCommon();
                         throw new Exception("unknown command: " + options.outcommand);
                     }
-                    sendCommand.Append('\t');
 
-                    foreach (var arg in options.outargs)
+                    if (appendRemainingArgs)
                     {
-                        sendCommand.Append(arg);
                         sendCommand.Append('\t');
+
+                        foreach (var arg in options.outargs)
+                        {
+                            sendCommand.Append(arg);
+                            sendCommand.Append('\t');
+                        }
                     }
                 }
 
@@ -80,6 +115,15 @@ namespace KeePassCommand.Command
                 ISendCommand send = sender.Send(sendCommand.ToString());
 
                 command.Run(options, send);
+                if (command is ICommandHasExitCode)
+                {
+                    var commandHasExitCode = (command as ICommandHasExitCode);
+                    ExitCode = commandHasExitCode.ExitCode;
+                }
+                else
+                {
+                    ExitCode = 0;
+                }
             }
             catch (Exception ex)
             {

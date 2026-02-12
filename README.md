@@ -25,7 +25,8 @@ The minimum .NET framework required is 4.0.
 Execute **KeePassCommand.exe** without parameters to view the help.
 
 ```
-KeePassCommand 4.5
+
+KeePassCommand 4.6
 https://github.com/MircoBabin/KeePassCommander - MIT license
 
 KeePass Commander is a plugin for the KeePass password store (https://keepass.info/).
@@ -91,6 +92,43 @@ e.g. KeePassCommand.exe listgroup "All Entries"
 - The queried entry note may contain lines "KeePassCommanderListAddItem={title}".
 - Output is one title per line, unique sorted on titlename.
 - There is no SUCCESS or ERROR indication in the output.
+
+* sign using buildstamp ( https://github.com/MircoBabin/BuildStamp )
+KeePassCommand.exe sign-using-buildstamp "KeePass-entry-title" "filename"
+e.g. KeePassCommand.exe sign-using-buildstamp "SafeNet Token" "c:\my-project\bin\release\my-executable.exe"
+- The queried entry must contain the advanced field "buildstamp-exe" pointing to buildstamp.exe on the host running KeePass.
+- The advanced field "buildstamp-exe[...lowercase computername of KeePass host...]" is preferred.
+- The advanced field "--signtool-exe[...lowercase computername of KeePass host...]" is preferred.
+- The advanced field "--pkcs11-driver[...lowercase computername of KeePass host...]" is preferred.
+- The exitcode is the exitcode of buildstamp.exe. Exitcode will be 99 if buildstamp.exe is not startable.
+- Output will be the stdout output followed by the stderr output of buildstamp.exe.
+
+--- LICENSE ---
+KeePass Commander
+MIT license
+
+Copyright (c) 2018 Mirco Babin
+
+Permission is hereby granted, free of charge, to any person
+obtaining a copy of this software and associated documentation
+files (the "Software"), to deal in the Software without
+restriction, including without limitation the rights to use,
+copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the
+Software is furnished to do so, subject to the following
+conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+OTHER DEALINGS IN THE SOFTWARE.
 
 ```
 

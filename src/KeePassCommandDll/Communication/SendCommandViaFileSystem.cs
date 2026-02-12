@@ -38,12 +38,11 @@ namespace KeePassCommandDll.Communication
         }
 
 
-        private byte[] ReadResponse(string filename)
+        private byte[] ReadResponse(string filename, int timeoutSeconds)
         {
             try
             {
                 var StartTime = DateTime.Now;
-                int timeoutSeconds = 10;
                 while (true)
                 {
                     try
@@ -106,14 +105,14 @@ namespace KeePassCommandDll.Communication
                     // Hello - settle a shared key for encryption
                     WriteRequest(helloRequestFilename, encryption.PublicKeyForSettlement);
 
-                    encryption.SettleSharedKey(ReadResponse(helloResponseFilename));
+                    encryption.SettleSharedKey(ReadResponse(helloResponseFilename, 10 /* seconds */));
                 }
 
                 {
                     // Request - encrypted
                     WriteRequest(requestFilename, encryption.Encrypt(Command));
 
-                    string response = encryption.Decrypt(ReadResponse(responseFilename));
+                    string response = encryption.Decrypt(ReadResponse(responseFilename, 300 /* 5 minutes */));
                     Response.ReadFromStream(response);
                 }
             }
