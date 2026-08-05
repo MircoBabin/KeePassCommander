@@ -26,7 +26,8 @@ Execute **KeePassCommand.exe** without parameters to view the help.
 
 ```
 
-KeePassCommand 4.6
+
+KeePassCommand 4.7
 https://github.com/MircoBabin/KeePassCommander - MIT license
 
 KeePass Commander is a plugin for the KeePass password store (https://keepass.info/).
@@ -93,13 +94,23 @@ e.g. KeePassCommand.exe listgroup "All Entries"
 - Output is one title per line, unique sorted on titlename.
 - There is no SUCCESS or ERROR indication in the output.
 
-* sign using buildstamp ( https://github.com/MircoBabin/BuildStamp )
+* sign executable using buildstamp ( https://github.com/MircoBabin/BuildStamp )
 KeePassCommand.exe sign-using-buildstamp "KeePass-entry-title" "filename"
 e.g. KeePassCommand.exe sign-using-buildstamp "SafeNet Token" "c:\my-project\bin\release\my-executable.exe"
 - The queried entry must contain the advanced field "buildstamp-exe" pointing to buildstamp.exe on the host running KeePass.
 - The advanced field "buildstamp-exe[...lowercase computername of KeePass host...]" is preferred.
 - The advanced field "--signtool-exe[...lowercase computername of KeePass host...]" is preferred.
 - The advanced field "--pkcs11-driver[...lowercase computername of KeePass host...]" is preferred.
+- The exitcode is the exitcode of buildstamp.exe. Exitcode will be 99 if buildstamp.exe is not startable.
+- Output will be the stdout output followed by the stderr output of buildstamp.exe.
+
+* sign .rdp file using buildstamp ( https://github.com/MircoBabin/BuildStamp )
+KeePassCommand.exe sign-rdp-using-buildstamp "KeePass-entry-title" "filename"
+e.g. KeePassCommand.exe sign-rdp-using-buildstamp "SafeNet Token" "c:\my-project\my-rdp-connection.rdp"
+- The queried entry must contain the advanced field "buildstamp-exe" pointing to buildstamp.exe on the host running KeePass.
+- The advanced field "buildstamp-exe[...lowercase computername of KeePass host...]" is preferred.
+- The advanced field "--pkcs11-driver[...lowercase computername of KeePass host...]" is preferred.
+- The optional advanced field "--rdpsign-exe[...lowercase computername of KeePass host...]" is preferred.
 - The exitcode is the exitcode of buildstamp.exe. Exitcode will be 99 if buildstamp.exe is not startable.
 - Output will be the stdout output followed by the stderr output of buildstamp.exe.
 

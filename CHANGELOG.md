@@ -1,5 +1,12 @@
 # KeePassCommander changelog
 
+## Version 4.7
+Release date: 5 august 2026
+
+* add: sign-rdp-using-buildstamp, to digitally code sign an .rdp (Remote Desktop) file using [buildstamp](https://github.com/MircoBabin/BuildStamp)
+* add: C# Api function signRdpUsingBuildstampOnKeePassHost()
+* update programming language connector for C#: KeePassEntry.cs 
+
 ## Version 4.6
 Release date: 12 february 2026
 
