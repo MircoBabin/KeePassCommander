@@ -84,7 +84,7 @@ namespace KeePassCommander.Command
             try
             {
                 pkcs11_driver = EntriesHelper.GetEntryField(Debug, KeePassHost, entry, "--pkcs11-driver[" + Environment.MachineName.ToLowerInvariant() + "]");
-                if (string.IsNullOrEmpty(buildstamp_exe)) buildstamp_exe = null;
+                if (string.IsNullOrEmpty(pkcs11_driver)) pkcs11_driver = null;
             }
             catch { }
 
@@ -93,7 +93,7 @@ namespace KeePassCommander.Command
                 try
                 {
                     pkcs11_driver = EntriesHelper.GetEntryField(Debug, KeePassHost, entry, "--pkcs11-driver");
-                    if (string.IsNullOrEmpty(buildstamp_exe)) buildstamp_exe = null;
+                    if (string.IsNullOrEmpty(pkcs11_driver)) pkcs11_driver = null;
                 }
                 catch { }
             }
