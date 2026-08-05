@@ -95,6 +95,14 @@ namespace KeePassCommand
         public byte[] SignedBytes { get; set; }
     }
 
+    public class KeePassSignRdpUsingBuildstampOnKeePassHost
+    {
+        public int ExitCode { get; set; }
+        public string StdOut { get; set; }
+        public string StdErr { get; set; }
+        public byte[] SignedBytes { get; set; }
+    }
+
     public class KeePassEntry
     {
         public string Title { get; set; }
@@ -252,6 +260,24 @@ namespace KeePassCommand
             };
         }
 
+        public static KeePassSignRdpUsingBuildstampOnKeePassHost signRdpUsingBuildstampOnKeePassHost(string title, string filenameToCodeSign)
+        {
+            if (!InitializeCalled) throw new Exception("Call KeePassEntry.Initialize() first");
+
+            var result = KeePassCommandDll_ApiSignRdpUsingBuildstampOnKeePassHost.Invoke(null, new object[] { title, filenameToCodeSign });
+            if (result == null) return null;
+
+            Type ApiSignRdpUsingBuildstampOnKeePassHostResponse = result.GetType();
+
+            return new KeePassSignRdpUsingBuildstampOnKeePassHost()
+            {
+                ExitCode = GetResultPropertyInt32(result, ApiSignRdpUsingBuildstampOnKeePassHostResponse, "ExitCode"),
+                StdOut = GetResultPropertyString(result, ApiSignRdpUsingBuildstampOnKeePassHostResponse, "StdOut"),
+                StdErr = GetResultPropertyString(result, ApiSignRdpUsingBuildstampOnKeePassHostResponse, "StdErr"),
+                SignedBytes = GetResultPropertyBytes(result, ApiSignRdpUsingBuildstampOnKeePassHostResponse, "SignedBytes"),
+            };
+        }
+
         protected static string GetResultPropertyEnumAsString(object obj, Type type, string propertyName)
         {
             PropertyInfo prop = type.GetProperty(propertyName);
@@ -299,6 +325,7 @@ namespace KeePassCommand
         protected static MethodInfo KeePassCommandDll_ApiGetattachment = null;
         protected static MethodInfo KeePassCommandDll_ApiListgroup = null;
         protected static MethodInfo KeePassCommandDll_ApiSignUsingBuildstampOnKeePassHost = null;
+        protected static MethodInfo KeePassCommandDll_ApiSignRdpUsingBuildstampOnKeePassHost = null;
         protected static MethodInfo KeePassCommandDll_ApiGetLastCommunicationVia = null;
 
         public static void Initialize(string KeePassCommandDllPath,
@@ -332,6 +359,9 @@ namespace KeePassCommand
 
             KeePassCommandDll_ApiSignUsingBuildstampOnKeePassHost = KeePassCommandDll_Api.GetMethod("signUsingBuildstampOnKeePassHost", new Type[] { typeof(string), typeof(string) });
             if (KeePassCommandDll_ApiSignUsingBuildstampOnKeePassHost == null) throw new Exception("Error loading KeePassCommandDll.dll [KeePassCommandDll.Api.signUsingBuildstampOnKeePassHost(string, string) method] from " + KeePassCommandDllPath);
+
+            KeePassCommandDll_ApiSignRdpUsingBuildstampOnKeePassHost = KeePassCommandDll_Api.GetMethod("signRdpUsingBuildstampOnKeePassHost", new Type[] { typeof(string), typeof(string) });
+            if (KeePassCommandDll_ApiSignRdpUsingBuildstampOnKeePassHost == null) throw new Exception("Error loading KeePassCommandDll.dll [KeePassCommandDll.Api.signRdpUsingBuildstampOnKeePassHost(string, string) method] from " + KeePassCommandDllPath);
 
             KeePassCommandDll_ApiGetLastCommunicationVia = KeePassCommandDll_Api.GetMethod("getLastCommunicationVia", new Type[] { });
             if (KeePassCommandDll_ApiGetLastCommunicationVia == null) throw new Exception("Error loading KeePassCommandDll.dll [KeePassCommandDll.Api.getLastCommunicationVia() method] from " + KeePassCommandDllPath);
