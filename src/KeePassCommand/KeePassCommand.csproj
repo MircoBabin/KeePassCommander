@@ -48,6 +48,7 @@
     <Compile Include="Command\CommandGetFieldRaw.cs" />
     <Compile Include="Command\CommandGetNoteRaw.cs" />
     <Compile Include="Command\CommandListGroup.cs" />
+    <Compile Include="Command\CommandSignRdpUsingBuildstamp.cs" />
     <Compile Include="Command\CommandSignUsingBuildstamp.cs" />
     <Compile Include="Command\ICommandHasExitCode.cs" />
     <Compile Include="Command\ICommand.cs" />

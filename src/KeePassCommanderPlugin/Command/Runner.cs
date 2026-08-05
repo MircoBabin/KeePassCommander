@@ -37,6 +37,8 @@ namespace KeePassCommander.Command
                     command = new CommandListGroup();
                 else if (parms[0] == "sign-using-buildstamp")
                     command = new CommandSignUsingBuildstamp();
+                else if (parms[0] == "sign-rdp-using-buildstamp")
+                    command = new CommandSignRdpUsingBuildstamp();
             }
 
             if (command != null) command.Run(Debug, KeePassHost, parms, output, allowedTitles);

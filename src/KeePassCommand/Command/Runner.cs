@@ -86,6 +86,29 @@ namespace KeePassCommand.Command
                         sendCommand.Append(Convert.ToBase64String(File.ReadAllBytes(filename)));
                         sendCommand.Append('\t');
                     }
+                    else if (options.outcommand == "sign-rdp-using-buildstamp")
+                    {
+                        appendRemainingArgs = false;
+
+                        if (options.outargs.Count != 2)
+                            throw new Exception("sign-rdp-using-buildstamp expects 2 parameters, the KeePass-entry-title and the filename to sign.");
+                        string title = options.outargs[0];
+                        string filename = options.outargs[1];
+                        if (!File.Exists(filename))
+                            throw new Exception("sign-rdp-using-buildstamp: file \"" + filename + "\" does not exist.");
+                        string filenameOnly = Path.GetFileName(filename);
+
+                        command = new CommandSignRdpUsingBuildstamp(filename, filenameOnly);
+                        sendCommand.Append("sign-rdp-using-buildstamp");
+                        sendCommand.Append('\t');
+                        sendCommand.Append(title);
+                        sendCommand.Append('\t');
+
+                        sendCommand.Append(Convert.ToBase64String(Encoding.UTF8.GetBytes(filenameOnly)));
+                        sendCommand.Append('\t');
+                        sendCommand.Append(Convert.ToBase64String(File.ReadAllBytes(filename)));
+                        sendCommand.Append('\t');
+                    }
                     else
                     {
                         command = new CommandCommon();

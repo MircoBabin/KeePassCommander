@@ -48,6 +48,7 @@
     <Compile Include="..\KeePassCommanderConsts.cs">
       <Link>KeePassCommanderConsts.cs</Link>
     </Compile>
+    <Compile Include="Command\CommandSignRdpUsingBuildstamp.cs" />
     <Compile Include="Command\CommandSignUsingBuildstamp.cs" />
     <Compile Include="Command\Runner.cs" />
     <Compile Include="Command\CommandGetAttachment.cs" />
